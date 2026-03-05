@@ -11,7 +11,9 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Loader2, Copy, CheckCircle2, AlertCircle, QrCode } from "lucide-react"
+import { Copy, CheckCircle2, KeyRound } from "lucide-react"
+
+const PIX_KEY = "a18a6815-1ab0-4e94-b20f-55d5fbb3ac9e"
 
 type SelectedPackage = {
   platform: string
@@ -20,7 +22,7 @@ type SelectedPackage = {
   price: string
 }
 
-type Step = "form" | "loading" | "payment" | "success" | "error"
+type Step = "form" | "payment"
 
 export function PurchaseModal({
   open,
@@ -34,23 +36,15 @@ export function PurchaseModal({
   const [step, setStep] = useState<Step>("form")
   const [profileUrl, setProfileUrl] = useState("")
   const [email, setEmail] = useState("")
-  const [pixData, setPixData] = useState<{
-    qrCode: string
-    pixCopyPaste: string
-    transactionId: string
-  } | null>(null)
   const [copied, setCopied] = useState(false)
   const [error, setError] = useState("")
-  const [checkingPayment, setCheckingPayment] = useState(false)
 
   const resetModal = () => {
     setStep("form")
     setProfileUrl("")
     setEmail("")
-    setPixData(null)
     setCopied(false)
     setError("")
-    setCheckingPayment(false)
   }
 
   const handleClose = (open: boolean) => {
@@ -58,86 +52,20 @@ export function PurchaseModal({
     onOpenChange(open)
   }
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     if (!profileUrl.trim()) {
       setError("Informe o link do seu perfil ou publicacao.")
       return
     }
 
     setError("")
-    setStep("loading")
-
-    try {
-      const priceNumber = parseFloat(
-        selectedPackage!.price.replace(".", "").replace(",", ".")
-      )
-
-      const response = await fetch("/api/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          platform: selectedPackage!.platform,
-          type: selectedPackage!.type,
-          quantity: selectedPackage!.quantity,
-          price: priceNumber,
-          profileUrl: profileUrl.trim(),
-          email: email.trim(),
-        }),
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || "Erro ao criar pagamento.")
-      }
-
-      setPixData({
-        qrCode: data.qrCode,
-        pixCopyPaste: data.pixCopyPaste,
-        transactionId: data.transactionId,
-      })
-      setStep("payment")
-
-      // Start polling for payment status
-      pollPaymentStatus(data.transactionId)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro inesperado.")
-      setStep("error")
-    }
-  }
-
-  const pollPaymentStatus = (transactionId: string) => {
-    setCheckingPayment(true)
-    const interval = setInterval(async () => {
-      try {
-        const res = await fetch(
-          `/api/checkout/status?transactionId=${transactionId}`
-        )
-        const data = await res.json()
-
-        if (data.status === "paid" || data.status === "completed") {
-          clearInterval(interval)
-          setCheckingPayment(false)
-          setStep("success")
-        }
-      } catch {
-        // Continue polling
-      }
-    }, 5000)
-
-    // Stop after 10 minutes
-    setTimeout(() => {
-      clearInterval(interval)
-      setCheckingPayment(false)
-    }, 600000)
+    setStep("payment")
   }
 
   const handleCopyPix = () => {
-    if (pixData?.pixCopyPaste) {
-      navigator.clipboard.writeText(pixData.pixCopyPaste)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 3000)
-    }
+    navigator.clipboard.writeText(PIX_KEY)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 3000)
   }
 
   if (!selectedPackage) return null
@@ -217,51 +145,55 @@ export function PurchaseModal({
           </>
         )}
 
-        {step === "loading" && (
-          <div className="flex flex-col items-center gap-4 py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <p className="text-sm text-muted-foreground">
-              Gerando pagamento PIX...
-            </p>
-          </div>
-        )}
-
-        {step === "payment" && pixData && (
+        {step === "payment" && (
           <>
             <DialogHeader>
               <DialogTitle className="text-foreground font-mono">
                 Pagamento PIX
               </DialogTitle>
               <DialogDescription className="text-muted-foreground">
-                Escaneie o QR Code ou copie o codigo PIX para pagar.
+                Copie a chave PIX abaixo e faca o pagamento pelo seu banco.
               </DialogDescription>
             </DialogHeader>
 
-            <div className="mt-4 flex flex-col items-center gap-6">
-              {/* QR Code area */}
-              <div className="flex h-48 w-48 items-center justify-center rounded-xl border border-border bg-foreground p-2">
-                {pixData.qrCode ? (
-                  <img
-                    src={pixData.qrCode}
-                    alt="QR Code PIX"
-                    className="h-full w-full"
-                    crossOrigin="anonymous"
-                  />
-                ) : (
-                  <QrCode className="h-20 w-20 text-background" />
-                )}
+            <div className="mt-4 flex flex-col items-center gap-5">
+              {/* Order summary */}
+              <div className="w-full rounded-lg border border-border bg-secondary p-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Pedido</span>
+                  <span className="text-sm font-medium text-foreground">
+                    {selectedPackage.quantity} {selectedPackage.type.toLowerCase()} - {selectedPackage.platform}
+                  </span>
+                </div>
+                <div className="mt-2 flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Perfil</span>
+                  <span className="text-sm font-medium text-foreground truncate max-w-[200px]">
+                    {profileUrl}
+                  </span>
+                </div>
+                <div className="mt-2 flex items-center justify-between border-t border-border pt-2">
+                  <span className="text-sm font-medium text-foreground">Valor a pagar</span>
+                  <span className="text-lg font-bold text-primary font-mono">
+                    R$ {selectedPackage.price}
+                  </span>
+                </div>
               </div>
 
-              {/* PIX copy paste */}
+              {/* PIX Key icon */}
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+                <KeyRound className="h-8 w-8 text-primary" />
+              </div>
+
+              {/* PIX key to copy */}
               <div className="w-full">
                 <Label className="text-muted-foreground text-xs">
-                  Codigo PIX Copia e Cola
+                  Chave PIX (Copia e Cola)
                 </Label>
                 <div className="mt-1 flex gap-2">
                   <Input
                     readOnly
-                    value={pixData.pixCopyPaste}
-                    className="bg-secondary border-border text-foreground text-xs"
+                    value={PIX_KEY}
+                    className="bg-secondary border-border text-foreground text-xs font-mono"
                   />
                   <Button
                     variant="outline"
@@ -276,64 +208,32 @@ export function PurchaseModal({
                     )}
                   </Button>
                 </div>
-              </div>
-
-              <div className="flex items-center gap-2 rounded-lg border border-border bg-secondary px-4 py-3 w-full">
-                {checkingPayment && (
-                  <Loader2 className="h-4 w-4 animate-spin text-primary shrink-0" />
+                {copied && (
+                  <p className="mt-1 text-xs text-primary">Chave copiada!</p>
                 )}
-                <p className="text-sm text-muted-foreground">
-                  Aguardando confirmacao do pagamento...
-                </p>
               </div>
 
-              <div className="text-center">
-                <p className="text-xs text-muted-foreground">
-                  Total: <span className="font-bold text-primary font-mono">R$ {selectedPackage.price}</span>
-                </p>
+              {/* Instructions */}
+              <div className="w-full rounded-lg border border-border bg-secondary px-4 py-3">
+                <p className="text-sm font-medium text-foreground mb-2">Como pagar:</p>
+                <ol className="flex flex-col gap-1 text-xs text-muted-foreground list-decimal list-inside">
+                  <li>Copie a chave PIX acima</li>
+                  <li>Abra o app do seu banco</li>
+                  <li>{'Escolha "Pagar com PIX" > "Chave PIX"'}</li>
+                  <li>Cole a chave e pague o valor de <span className="font-bold text-primary font-mono">R$ {selectedPackage.price}</span></li>
+                  <li>Envie o comprovante para confirmar a entrega</li>
+                </ol>
               </div>
+
+              <Button
+                variant="outline"
+                onClick={() => setStep("form")}
+                className="w-full"
+              >
+                Voltar
+              </Button>
             </div>
           </>
-        )}
-
-        {step === "success" && (
-          <div className="flex flex-col items-center gap-4 py-12 text-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-              <CheckCircle2 className="h-8 w-8 text-primary" />
-            </div>
-            <h3 className="text-xl font-bold text-foreground font-mono">
-              Pagamento Confirmado!
-            </h3>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              Seu pedido de {selectedPackage.quantity}{" "}
-              {selectedPackage.type.toLowerCase()} de {selectedPackage.platform} foi
-              recebido e esta sendo processado. A entrega comeca em instantes!
-            </p>
-            <Button onClick={() => handleClose(false)} className="mt-4">
-              Fechar
-            </Button>
-          </div>
-        )}
-
-        {step === "error" && (
-          <div className="flex flex-col items-center gap-4 py-12 text-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10">
-              <AlertCircle className="h-8 w-8 text-destructive" />
-            </div>
-            <h3 className="text-xl font-bold text-foreground font-mono">
-              Erro no Pagamento
-            </h3>
-            <p className="text-sm text-muted-foreground">{error}</p>
-            <Button
-              onClick={() => {
-                setError("")
-                setStep("form")
-              }}
-              className="mt-4"
-            >
-              Tentar Novamente
-            </Button>
-          </div>
         )}
       </DialogContent>
     </Dialog>
