@@ -21,17 +21,14 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-background">
       <Header
         balance={balance}
         onAddBalance={() => setBalanceModalOpen(true)}
       />
 
-      <main className="flex-1 flex items-start justify-center px-4 py-8">
-        <div className="w-full max-w-2xl rounded-2xl border border-border bg-card p-6 shadow-lg sm:p-8">
-          <h1 className="text-xl font-bold text-foreground font-mono mb-6 text-balance">
-            Novo Pedido
-          </h1>
+      <main className="flex-1 px-4 py-6">
+        <div className="mx-auto w-full max-w-2xl rounded-xl bg-card p-5 shadow-sm sm:p-6">
           <OrderPanel
             balance={balance}
             onBalanceChange={setBalance}

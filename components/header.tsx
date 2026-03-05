@@ -1,7 +1,7 @@
 "use client"
 
-import { Zap, Plus, Wallet } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { Plus, Wallet, Menu, X } from "lucide-react"
+import { useState } from "react"
 
 export function Header({
   balance,
@@ -10,33 +10,63 @@ export function Header({
   balance: number
   onAddBalance: () => void
 }) {
+  const [menuOpen, setMenuOpen] = useState(false)
+
   return (
-    <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-xl">
-      <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-3">
-        <a href="#" className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-            <Zap className="h-4 w-4 text-primary-foreground" />
-          </div>
-          <span className="text-lg font-bold tracking-tight text-foreground font-mono">
+    <header className="sticky top-0 z-50">
+      {/* Top bar - teal */}
+      <div className="bg-primary text-primary-foreground">
+        <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-3">
+          <span className="text-lg font-bold tracking-tight font-mono uppercase">
             InstaBarato
           </span>
-        </a>
-
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 rounded-lg border border-border bg-secondary px-3 py-1.5">
-            <Wallet className="h-4 w-4 text-primary" />
-            <span className="text-sm font-bold text-primary font-mono">
-              R$ {balance.toFixed(2).replace(".", ",")}
-            </span>
-          </div>
-          <Button
-            size="sm"
-            onClick={onAddBalance}
-            className="gap-1"
+          <button
+            onClick={() => setMenuOpen(!menuOpen)}
+            className="text-primary-foreground"
+            aria-label="Menu"
           >
-            <Plus className="h-4 w-4" />
-            <span className="hidden sm:inline">Adicionar Saldo</span>
-          </Button>
+            {menuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </button>
+        </div>
+
+        {/* Mobile menu */}
+        {menuOpen && (
+          <div className="border-t border-primary-foreground/20 px-4 pb-3">
+            <div className="mx-auto max-w-3xl flex flex-col gap-2">
+              <button
+                onClick={() => {
+                  onAddBalance()
+                  setMenuOpen(false)
+                }}
+                className="flex items-center gap-2 rounded-lg bg-primary-foreground/15 px-3 py-2 text-sm font-medium text-primary-foreground"
+              >
+                <Plus className="h-4 w-4" />
+                Adicionar Saldo
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Balance bar */}
+      <div className="bg-primary/85 text-primary-foreground">
+        <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-2.5">
+          <div className="flex items-center gap-2">
+            <Wallet className="h-4 w-4" />
+            <span className="text-sm font-medium">Saldo:</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="text-base font-bold font-mono">
+              R$ {balance.toFixed(5).replace(".", ",")}
+            </span>
+            <button
+              onClick={onAddBalance}
+              className="flex items-center gap-1 rounded-md bg-primary-foreground/20 px-2.5 py-1 text-xs font-semibold text-primary-foreground transition-colors hover:bg-primary-foreground/30"
+            >
+              <Plus className="h-3 w-3" />
+              Adicionar
+            </button>
+          </div>
         </div>
       </div>
     </header>

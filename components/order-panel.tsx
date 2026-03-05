@@ -1,10 +1,7 @@
 "use client"
 
 import { useState, useEffect, useMemo } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Search, Loader2, Send, AlertCircle, ChevronDown } from "lucide-react"
+import { Search, Loader2, AlertCircle, ChevronDown } from "lucide-react"
 import { deductBalance, addOrder } from "@/lib/balance"
 
 type Service = {
@@ -110,7 +107,7 @@ export function OrderPanel({
     if (isNaN(qty) || qty < min || qty > max) {
       setSubmitMessage({
         type: "error",
-        text: `Quantidade deve ser entre ${min} e ${max}.`,
+        text: `Quantidade deve ser entre ${min.toLocaleString("pt-BR")} e ${max.toLocaleString("pt-BR")}.`,
       })
       return
     }
@@ -196,17 +193,18 @@ export function OrderPanel({
       {/* Search */}
       <div className="relative">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          placeholder="Procurar servico..."
+        <input
+          type="text"
+          placeholder="Procurar"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="bg-secondary border-border text-foreground placeholder:text-muted-foreground pl-10"
+          className="w-full rounded-lg border border-border bg-card px-3 py-2.5 pl-10 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-ring"
         />
       </div>
 
       {/* Category */}
       <div className="flex flex-col gap-1.5">
-        <Label className="text-foreground text-sm font-semibold">Categoria</Label>
+        <label className="text-sm font-bold text-foreground">Categoria</label>
         <div className="relative">
           <select
             value={selectedCategory}
@@ -229,7 +227,7 @@ export function OrderPanel({
 
       {/* Service */}
       <div className="flex flex-col gap-1.5">
-        <Label className="text-foreground text-sm font-semibold">Servico</Label>
+        <label className="text-sm font-bold text-foreground">Servico</label>
         <div className="relative">
           <select
             value={selectedServiceId}
@@ -249,32 +247,35 @@ export function OrderPanel({
 
       {/* Service Description */}
       {selectedService?.description && (
-        <div className="rounded-lg border border-border bg-secondary/50 p-4">
-          <p className="text-sm font-semibold text-foreground mb-2">Descricao</p>
-          <div
-            className="text-xs text-muted-foreground leading-relaxed whitespace-pre-line"
-            dangerouslySetInnerHTML={{ __html: selectedService.description }}
-          />
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-bold text-foreground">Descricao</label>
+          <div className="rounded-lg border border-border bg-secondary/60 p-4">
+            <div
+              className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line [&_br]:block"
+              dangerouslySetInnerHTML={{ __html: selectedService.description }}
+            />
+          </div>
         </div>
       )}
 
       {/* Link */}
       <div className="flex flex-col gap-1.5">
-        <Label className="text-foreground text-sm font-semibold">Link</Label>
-        <Input
+        <label className="text-sm font-bold text-foreground">Link</label>
+        <input
+          type="text"
           placeholder="https://www.instagram.com/seuperfil"
           value={link}
           onChange={(e) => setLink(e.target.value)}
-          className="bg-secondary border-border text-foreground placeholder:text-muted-foreground"
+          className="w-full rounded-lg border border-border bg-secondary px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-ring"
         />
       </div>
 
       {/* Quantity */}
       <div className="flex flex-col gap-1.5">
-        <Label className="text-foreground text-sm font-semibold">
-          Quantidade
-        </Label>
-        <Input
+        <label className="text-sm font-bold text-foreground">
+          Nivel de Veiculacao (Campanha)
+        </label>
+        <input
           type="number"
           placeholder={
             selectedService
@@ -285,7 +286,7 @@ export function OrderPanel({
           onChange={(e) => setQuantity(e.target.value)}
           min={selectedService ? parseInt(selectedService.min) : undefined}
           max={selectedService ? parseInt(selectedService.max) : undefined}
-          className="bg-secondary border-border text-foreground placeholder:text-muted-foreground font-mono"
+          className="w-full rounded-lg border border-border bg-secondary px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-ring font-mono"
           disabled={!selectedService}
         />
         {selectedService && (
@@ -298,17 +299,18 @@ export function OrderPanel({
 
       {/* Cost Estimate */}
       <div className="flex flex-col gap-1.5">
-        <Label className="text-foreground text-sm font-semibold">
+        <label className="text-sm font-bold text-foreground">
           Estimativa de Valor
-        </Label>
-        <Input
+        </label>
+        <input
+          type="text"
           readOnly
           value={
             estimatedCost > 0
               ? `R$ ${estimatedCost.toFixed(5)}`
               : "R$ 0,00"
           }
-          className="bg-secondary border-border text-muted-foreground font-mono"
+          className="w-full rounded-lg border border-border bg-muted px-3 py-2.5 text-sm text-muted-foreground font-mono outline-none cursor-default"
         />
       </div>
 
@@ -317,8 +319,8 @@ export function OrderPanel({
         <div
           className={`rounded-lg border px-4 py-3 text-sm ${
             submitMessage.type === "success"
-              ? "border-primary/30 bg-primary/10 text-primary"
-              : "border-destructive/30 bg-destructive/10 text-destructive"
+              ? "border-primary/40 bg-primary/10 text-accent"
+              : "border-destructive/40 bg-destructive/10 text-destructive"
           }`}
         >
           {submitMessage.text}
@@ -326,24 +328,20 @@ export function OrderPanel({
       )}
 
       {/* Submit Button */}
-      <Button
+      <button
         onClick={handleSubmit}
         disabled={submitting || !selectedService}
-        className="w-full gap-2"
-        size="lg"
+        className="w-full rounded-lg bg-primary px-4 py-3 text-sm font-bold text-primary-foreground transition-colors hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {submitting ? (
-          <>
+          <span className="flex items-center justify-center gap-2">
             <Loader2 className="h-4 w-4 animate-spin" />
             Enviando...
-          </>
+          </span>
         ) : (
-          <>
-            <Send className="h-4 w-4" />
-            Enviar
-          </>
+          "Enviar"
         )}
-      </Button>
+      </button>
     </div>
   )
 }
