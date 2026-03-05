@@ -1,46 +1,51 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Header } from "@/components/header"
-import { Hero } from "@/components/hero"
-import { Services } from "@/components/services"
-import { HowItWorks } from "@/components/how-it-works"
-import { FAQ } from "@/components/faq"
+import { OrderPanel } from "@/components/order-panel"
+import { AddBalanceModal } from "@/components/add-balance-modal"
 import { Footer } from "@/components/footer"
-import { PurchaseModal } from "@/components/purchase-modal"
-
-type SelectedPackage = {
-  platform: string
-  type: string
-  quantity: string
-  price: string
-}
+import { getBalance, addBalance as addBalanceFn } from "@/lib/balance"
 
 export default function HomePage() {
-  const [modalOpen, setModalOpen] = useState(false)
-  const [selectedPackage, setSelectedPackage] = useState<SelectedPackage | null>(null)
+  const [balance, setBalance] = useState(0)
+  const [balanceModalOpen, setBalanceModalOpen] = useState(false)
 
-  const handleSelectPackage = (pkg: SelectedPackage) => {
-    setSelectedPackage(pkg)
-    setModalOpen(true)
+  useEffect(() => {
+    setBalance(getBalance())
+  }, [])
+
+  const handleBalanceAdded = (amount: number) => {
+    const newBalance = addBalanceFn(amount)
+    setBalance(newBalance)
   }
 
   return (
-    <>
-      <Header />
-      <main>
-        <Hero />
-        <Services onSelectPackage={handleSelectPackage} />
-        <HowItWorks />
-        <FAQ />
+    <div className="min-h-screen flex flex-col">
+      <Header
+        balance={balance}
+        onAddBalance={() => setBalanceModalOpen(true)}
+      />
+
+      <main className="flex-1 flex items-start justify-center px-4 py-8">
+        <div className="w-full max-w-2xl rounded-2xl border border-border bg-card p-6 shadow-lg sm:p-8">
+          <h1 className="text-xl font-bold text-foreground font-mono mb-6 text-balance">
+            Novo Pedido
+          </h1>
+          <OrderPanel
+            balance={balance}
+            onBalanceChange={setBalance}
+          />
+        </div>
       </main>
+
       <Footer />
 
-      <PurchaseModal
-        open={modalOpen}
-        onOpenChange={setModalOpen}
-        selectedPackage={selectedPackage}
+      <AddBalanceModal
+        open={balanceModalOpen}
+        onOpenChange={setBalanceModalOpen}
+        onBalanceAdded={handleBalanceAdded}
       />
-    </>
+    </div>
   )
 }
