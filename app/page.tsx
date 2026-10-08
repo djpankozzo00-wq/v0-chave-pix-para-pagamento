@@ -2,7 +2,21 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { ArrowRight, BadgeCheck, BarChart3, ChevronRight, Instagram, MessageCircle, Music2, PlayCircle, ShieldCheck, Sparkles, Youtube, Zap } from "lucide-react"
+import {
+  ArrowRight,
+  BadgeCheck,
+  BarChart3,
+  CheckCircle2,
+  ChevronRight,
+  Instagram,
+  MessageCircle,
+  Music2,
+  PlayCircle,
+  ShieldCheck,
+  Sparkles,
+  Youtube,
+  Zap,
+} from "lucide-react"
 import { Header } from "@/components/header"
 import { OrderPanel } from "@/components/order-panel"
 import { AddBalanceModal } from "@/components/add-balance-modal"
@@ -10,10 +24,16 @@ import { Footer } from "@/components/footer"
 import { getBalance, addBalance as addBalanceFn } from "@/lib/balance"
 
 const categories = [
-  { name: "Instagram", detail: "Seguidores, curtidas e visualizações", icon: Instagram },
-  { name: "TikTok", detail: "Visualizações e engajamento", icon: Music2 },
-  { name: "YouTube", detail: "Views, inscritos e curtidas", icon: Youtube },
-  { name: "Outras redes", detail: "Serviços para suas redes sociais", icon: MessageCircle },
+  { name: "Instagram", detail: "Serviços para perfis e publicações", icon: Instagram, tag: "POPULAR" },
+  { name: "TikTok", detail: "Opções para vídeos e perfis", icon: Music2, tag: "VÍDEOS" },
+  { name: "YouTube", detail: "Serviços para canais e vídeos", icon: Youtube, tag: "CANAIS" },
+  { name: "Outras redes", detail: "Explore as opções disponíveis", icon: MessageCircle, tag: "MAIS" },
+]
+
+const steps = [
+  { number: "01", title: "Escolha um serviço", description: "Pesquise pelo nome ou filtre pela categoria desejada." },
+  { number: "02", title: "Informe os detalhes", description: "Adicione o link e a quantidade permitida para o serviço." },
+  { number: "03", title: "Revise seu pedido", description: "Confira as informações e o valor antes de continuar." },
 ]
 
 export default function HomePage() {
@@ -30,113 +50,132 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#080b10] text-white">
+    <div className="flex min-h-screen flex-col bg-[#080b10] text-white">
       <Header balance={balance} onAddBalance={() => setBalanceModalOpen(true)} />
 
       <main className="flex-1">
-        <section className="relative overflow-hidden border-b border-white/10">
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_70%_0%,rgba(34,197,94,0.17),transparent_48%)]" />
-          <div className="relative mx-auto grid w-full max-w-6xl gap-10 px-4 py-14 sm:px-6 sm:py-20 lg:grid-cols-[1.15fr_.85fr] lg:items-center">
+        <section className="relative isolate overflow-hidden border-b border-white/[0.08]">
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_76%_5%,rgba(16,185,129,0.17),transparent_42%),radial-gradient(ellipse_at_0%_80%,rgba(59,130,246,0.07),transparent_36%)]" />
+          <div className="mx-auto grid w-full max-w-7xl gap-12 px-4 py-14 sm:px-6 sm:py-20 lg:grid-cols-[1.08fr_.92fr] lg:items-center lg:gap-16 lg:px-8 lg:py-24">
             <div>
-              <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-emerald-400/25 bg-emerald-400/10 px-3 py-1.5 text-xs font-semibold text-emerald-300">
-                <Sparkles className="h-4 w-4" /> Sua presença digital começa aqui
+              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/[0.08] px-3.5 py-2 text-xs font-semibold tracking-wide text-emerald-300">
+                <Sparkles className="h-4 w-4" /> SUA CENTRAL DE SERVIÇOS DIGITAIS
               </div>
-              <h1 className="max-w-2xl text-4xl font-black leading-tight tracking-tight sm:text-5xl lg:text-6xl">
-                Faça suas redes <span className="text-emerald-400">crescerem</span> com praticidade.
+              <h1 className="max-w-3xl text-4xl font-black leading-[1.08] tracking-[-0.04em] sm:text-5xl lg:text-[3.65rem]">
+                Sua presença digital, <span className="text-emerald-400">em um só lugar.</span>
               </h1>
-              <p className="mt-5 max-w-xl text-base leading-7 text-slate-300 sm:text-lg">
-                Encontre serviços para redes sociais em um só lugar. Escolha o serviço, informe seu perfil e acompanhe seus pedidos pelo painel.
+              <p className="mt-6 max-w-xl text-base leading-7 text-slate-300 sm:text-lg sm:leading-8">
+                Encontre e configure serviços para redes sociais com uma experiência simples, organizada e feita para você.
               </p>
-              <div className="mt-8 flex flex-wrap gap-3">
-                <a href="#servicos" className="inline-flex items-center gap-2 rounded-xl bg-emerald-400 px-5 py-3 font-bold text-slate-950 transition hover:bg-emerald-300">
-                  Ver serviços <ArrowRight className="h-4 w-4" />
+              <div className="mt-8 flex flex-col gap-3 min-[420px]:flex-row">
+                <a href="#servicos" className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-400 px-5 py-3.5 text-sm font-bold text-slate-950 shadow-lg shadow-emerald-950/30 transition hover:-translate-y-0.5 hover:bg-emerald-300">
+                  Explorar serviços <ArrowRight className="h-4 w-4" />
                 </a>
-                <Link href="/login" className="inline-flex items-center gap-2 rounded-xl border border-white/15 px-5 py-3 font-semibold text-white transition hover:bg-white/5">
-                  Entrar ou cadastrar
+                <Link href="/login" className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/[0.03] px-5 py-3.5 text-sm font-semibold text-white transition hover:border-white/25 hover:bg-white/[0.06]">
+                  Acessar minha conta
                 </Link>
               </div>
-              <div className="mt-8 flex flex-wrap gap-x-5 gap-y-2 text-sm text-slate-400">
-                <span className="inline-flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-emerald-400" /> Painel simples</span>
-                <span className="inline-flex items-center gap-2"><Zap className="h-4 w-4 text-emerald-400" /> Pedido em poucos passos</span>
-                <span className="inline-flex items-center gap-2"><BadgeCheck className="h-4 w-4 text-emerald-400" /> Acompanhamento organizado</span>
+              <div className="mt-8 flex flex-wrap gap-x-5 gap-y-3 text-sm text-slate-400">
+                <span className="inline-flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-400" /> Navegação simples</span>
+                <span className="inline-flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-400" /> Serviços por categoria</span>
+                <span className="inline-flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-400" /> Preço visível antes do envio</span>
               </div>
             </div>
 
-            <div className="rounded-3xl border border-white/10 bg-[#10161e] p-5 shadow-2xl shadow-emerald-950/30 sm:p-7">
-              <div className="flex items-center justify-between border-b border-white/10 pb-4">
-                <div>
-                  <p className="text-sm text-slate-400">Visão geral</p>
-                  <h2 className="mt-1 text-xl font-bold">Seu painel social</h2>
-                </div>
-                <div className="rounded-xl bg-emerald-400/10 p-3 text-emerald-300"><BarChart3 className="h-6 w-6" /></div>
-              </div>
-              <div className="mt-5 grid grid-cols-2 gap-3">
-                <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-                  <p className="text-sm text-slate-400">Serviços disponíveis</p>
-                  <p className="mt-2 text-3xl font-black">24/7</p>
-                  <p className="mt-1 text-xs text-emerald-300">Consulte as opções</p>
-                </div>
-                <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-                  <p className="text-sm text-slate-400">Pagamento</p>
-                  <p className="mt-2 text-3xl font-black">PIX</p>
-                  <p className="mt-1 text-xs text-slate-400">Fluxo demonstrativo</p>
-                </div>
-              </div>
-              <div className="mt-4 space-y-3">
-                {[
-                  { label: "Escolha sua rede", sub: "Instagram, TikTok, YouTube e mais", icon: PlayCircle },
-                  { label: "Configure seu pedido", sub: "Selecione o serviço e informe o perfil", icon: ChevronRight },
-                  { label: "Acompanhe no painel", sub: "Tenha seus pedidos organizados", icon: BarChart3 },
-                ].map((item) => {
-                  const Icon = item.icon
-                  return <div key={item.label} className="flex items-center gap-3 rounded-xl bg-white/[0.03] p-3">
-                    <div className="rounded-lg bg-emerald-400/10 p-2 text-emerald-300"><Icon className="h-5 w-5" /></div>
-                    <div><p className="text-sm font-semibold">{item.label}</p><p className="mt-0.5 text-xs text-slate-400">{item.sub}</p></div>
+            <div className="relative mx-auto w-full max-w-xl">
+              <div aria-hidden="true" className="absolute -inset-5 rounded-[2rem] bg-emerald-400/[0.06] blur-2xl" />
+              <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-[#0f151d]/95 shadow-2xl shadow-black/40">
+                <div className="flex items-center justify-between border-b border-white/[0.08] px-5 py-4 sm:px-6">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-400/10 text-emerald-300"><BarChart3 className="h-5 w-5" /></div>
+                    <div><p className="text-sm font-bold">Painel Social</p><p className="mt-0.5 text-xs text-slate-500">Central de serviços</p></div>
                   </div>
-                })}
+                  <span className="rounded-full border border-white/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">Visão geral</span>
+                </div>
+                <div className="p-5 sm:p-6">
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Comece por aqui</p>
+                  <h2 className="mt-2 text-2xl font-bold tracking-tight">O que você quer impulsionar?</h2>
+                  <p className="mt-2 text-sm leading-6 text-slate-400">Escolha uma rede e encontre os serviços disponíveis no catálogo.</p>
+                  <div className="mt-5 grid grid-cols-2 gap-3">
+                    {categories.slice(0, 4).map(({ name, icon: Icon, tag }) => (
+                      <a key={name} href="#servicos" className="group rounded-2xl border border-white/[0.08] bg-white/[0.025] p-4 transition hover:border-emerald-400/30 hover:bg-emerald-400/[0.04]">
+                        <div className="flex items-center justify-between">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/[0.05] text-slate-200 transition group-hover:bg-emerald-400/10 group-hover:text-emerald-300"><Icon className="h-5 w-5" /></div>
+                          <ChevronRight className="h-4 w-4 text-slate-600 transition group-hover:translate-x-0.5 group-hover:text-emerald-300" />
+                        </div>
+                        <p className="mt-4 text-sm font-bold">{name}</p>
+                        <p className="mt-1 text-[10px] font-semibold tracking-[0.14em] text-slate-500">{tag}</p>
+                      </a>
+                    ))}
+                  </div>
+                  <div className="mt-4 flex items-start gap-3 rounded-xl border border-emerald-400/15 bg-emerald-400/[0.05] p-4">
+                    <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-emerald-300" />
+                    <div><p className="text-sm font-semibold text-slate-200">Confira antes de enviar</p><p className="mt-1 text-xs leading-5 text-slate-400">Revise o serviço, o link, a quantidade e o valor estimado do pedido.</p></div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </section>
 
-        <section className="mx-auto w-full max-w-6xl px-4 py-12 sm:px-6">
-          <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
+        <section className="mx-auto w-full max-w-7xl px-4 py-14 sm:px-6 lg:px-8 lg:py-16">
+          <div className="mb-7 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className="text-sm font-bold uppercase tracking-[0.2em] text-emerald-400">Categorias</p>
-              <h2 className="mt-2 text-2xl font-black sm:text-3xl">Serviços para suas redes</h2>
-              <p className="mt-2 text-sm text-slate-400">Escolha uma categoria e veja as opções disponíveis.</p>
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-300">Explore por categoria</p>
+              <h2 className="mt-3 text-2xl font-black tracking-tight sm:text-3xl">Encontre o que você procura</h2>
+              <p className="mt-2 max-w-xl text-sm leading-6 text-slate-400">Acesse o catálogo e veja as opções disponíveis para cada rede.</p>
             </div>
-            <a href="#fazer-pedido" className="inline-flex items-center gap-1 text-sm font-semibold text-emerald-300 hover:text-emerald-200">Fazer um pedido <ArrowRight className="h-4 w-4" /></a>
+            <a href="#fazer-pedido" className="inline-flex w-fit items-center gap-2 text-sm font-semibold text-emerald-300 transition hover:text-emerald-200">Ver catálogo <ArrowRight className="h-4 w-4" /></a>
           </div>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {categories.map((category) => {
-              const Icon = category.icon
-              return <a key={category.name} href="#fazer-pedido" className="group rounded-2xl border border-white/10 bg-[#10161e] p-5 transition hover:-translate-y-1 hover:border-emerald-400/40">
-                <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-400/10 text-emerald-300"><Icon className="h-6 w-6" /></div>
-                <h3 className="font-bold">{category.name}</h3>
-                <p className="mt-2 min-h-10 text-sm leading-5 text-slate-400">{category.detail}</p>
-                <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-emerald-300">Explorar <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" /></span>
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            {categories.map(({ name, detail, icon: Icon, tag }) => (
+              <a key={name} href="#fazer-pedido" className="group rounded-2xl border border-white/[0.09] bg-[#0e141c] p-5 transition duration-200 hover:-translate-y-1 hover:border-emerald-400/30 hover:bg-[#111a22]">
+                <div className="flex items-start justify-between">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-white/[0.07] bg-white/[0.03] text-slate-200 transition group-hover:border-emerald-400/20 group-hover:bg-emerald-400/10 group-hover:text-emerald-300"><Icon className="h-5 w-5" /></div>
+                  <span className="rounded-md bg-white/[0.04] px-2 py-1 text-[10px] font-bold tracking-wider text-slate-500">{tag}</span>
+                </div>
+                <h3 className="mt-5 font-bold">{name}</h3>
+                <p className="mt-2 min-h-10 text-sm leading-5 text-slate-400">{detail}</p>
+                <span className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-emerald-300">Ver opções <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" /></span>
               </a>
-            })}
+            ))}
           </div>
         </section>
 
-        <section id="servicos" className="mx-auto w-full max-w-6xl scroll-mt-8 px-4 pb-14 sm:px-6">
-          <div className="mb-6">
-            <p className="text-sm font-bold uppercase tracking-[0.2em] text-emerald-400">Área de pedidos</p>
-            <h2 className="mt-2 text-2xl font-black sm:text-3xl">Monte seu pedido</h2>
-            <p className="mt-2 text-sm text-slate-400">Use o formulário abaixo para consultar e configurar seu serviço.</p>
-          </div>
-          <div id="fazer-pedido" className="scroll-mt-6 rounded-2xl border border-white/10 bg-[#10161e] p-4 shadow-xl sm:p-6">
-            <OrderPanel balance={balance} onBalanceChange={setBalance} />
+        <section id="servicos" className="scroll-mt-8 border-y border-white/[0.08] bg-[#0b1017]">
+          <div className="mx-auto w-full max-w-7xl px-4 py-14 sm:px-6 lg:px-8 lg:py-16">
+            <div className="mx-auto mb-8 max-w-2xl text-center">
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-300">Catálogo de serviços</p>
+              <h2 className="mt-3 text-2xl font-black tracking-tight sm:text-3xl">Configure seu pedido</h2>
+              <p className="mt-3 text-sm leading-6 text-slate-400">Pesquise o serviço, confira os detalhes e veja a estimativa antes de continuar.</p>
+            </div>
+            <div id="fazer-pedido" className="mx-auto max-w-3xl scroll-mt-6 rounded-2xl border border-white/10 bg-[#101720] p-4 shadow-2xl shadow-black/20 sm:p-7">
+              <div className="mb-5 flex items-center gap-3 border-b border-white/[0.08] pb-5">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-400/10 text-emerald-300"><Zap className="h-5 w-5" /></div>
+                <div><h3 className="font-bold">Novo pedido</h3><p className="mt-0.5 text-xs text-slate-400">Preencha os campos abaixo</p></div>
+              </div>
+              <OrderPanel balance={balance} onBalanceChange={setBalance} />
+            </div>
           </div>
         </section>
 
-        <section className="border-y border-white/10 bg-[#0d1219]">
-          <div className="mx-auto grid max-w-6xl gap-6 px-4 py-10 sm:px-6 md:grid-cols-3">
-            <div><ShieldCheck className="h-6 w-6 text-emerald-400" /><h3 className="mt-3 font-bold">Experiência simples</h3><p className="mt-1 text-sm leading-6 text-slate-400">Navegue pelas categorias e encontre o formulário de pedido rapidamente.</p></div>
-            <div><Zap className="h-6 w-6 text-emerald-400" /><h3 className="mt-3 font-bold">Tudo organizado</h3><p className="mt-1 text-sm leading-6 text-slate-400">A estrutura foi pensada para reunir pedidos e saldo em um único painel.</p></div>
-            <div><BadgeCheck className="h-6 w-6 text-emerald-400" /><h3 className="mt-3 font-bold">Acesso à conta</h3><p className="mt-1 text-sm leading-6 text-slate-400">Acesse a tela de entrada e cadastro demonstrativa para continuar evoluindo o projeto.</p></div>
+        <section className="mx-auto w-full max-w-7xl px-4 py-14 sm:px-6 lg:px-8 lg:py-16">
+          <div className="mb-8 max-w-2xl">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-300">Como funciona</p>
+            <h2 className="mt-3 text-2xl font-black tracking-tight sm:text-3xl">Três passos para começar</h2>
+          </div>
+          <div className="grid gap-4 md:grid-cols-3">
+            {steps.map((step) => (
+              <div key={step.number} className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-5 sm:p-6">
+                <p className="font-mono text-sm font-bold tracking-wider text-emerald-300">{step.number}</p>
+                <h3 className="mt-4 font-bold">{step.title}</h3>
+                <p className="mt-2 text-sm leading-6 text-slate-400">{step.description}</p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-6 flex flex-col justify-between gap-4 rounded-2xl border border-white/10 bg-gradient-to-r from-emerald-400/[0.08] to-transparent p-5 sm:flex-row sm:items-center sm:p-7">
+            <div className="flex items-start gap-3"><div className="rounded-xl bg-emerald-400/10 p-2.5 text-emerald-300"><BadgeCheck className="h-5 w-5" /></div><div><h3 className="font-bold">Pronto para explorar?</h3><p className="mt-1 text-sm text-slate-400">Veja o catálogo e encontre o serviço que faz sentido para você.</p></div></div>
+            <a href="#fazer-pedido" className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-emerald-400 px-5 py-3 text-sm font-bold text-slate-950 transition hover:bg-emerald-300">Explorar catálogo <ArrowRight className="h-4 w-4" /></a>
           </div>
         </section>
       </main>
