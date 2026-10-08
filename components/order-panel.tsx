@@ -44,7 +44,7 @@ export function OrderPanel({
         if (Array.isArray(data)) {
           setServices(data)
         } else {
-          setError("Erro ao carregar servicos.")
+          setError("Erro ao carregar serviços.")
         }
       } catch {
         setError("Erro ao conectar com o servidor.")
@@ -94,11 +94,11 @@ export function OrderPanel({
 
   const handleSubmit = async () => {
     if (!selectedService) {
-      setSubmitMessage({ type: "error", text: "Selecione um servico." })
+      setSubmitMessage({ type: "error", text: "Selecione um serviço." })
       return
     }
     if (!link.trim()) {
-      setSubmitMessage({ type: "error", text: "Informe o link." })
+      setSubmitMessage({ type: "error", text: "Informe o link do perfil ou publicação." })
       return
     }
     const qty = parseInt(quantity)
@@ -174,7 +174,7 @@ export function OrderPanel({
     return (
       <div className="flex flex-col items-center justify-center gap-4 py-20">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="text-sm text-muted-foreground">Carregando servicos...</p>
+        <p className="text-sm text-muted-foreground">Carregando serviços...</p>
       </div>
     )
   }
@@ -195,7 +195,8 @@ export function OrderPanel({
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <input
           type="text"
-          placeholder="Procurar"
+          placeholder="Buscar serviço pelo nome..."
+          aria-label="Buscar serviço pelo nome"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="w-full rounded-lg border border-border bg-card px-3 py-2.5 pl-10 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-ring"
@@ -204,7 +205,7 @@ export function OrderPanel({
 
       {/* Category */}
       <div className="flex flex-col gap-1.5">
-        <label className="text-sm font-bold text-foreground">Categoria</label>
+        <label className="text-sm font-semibold text-foreground">Categoria</label>
         <div className="relative">
           <select
             value={selectedCategory}
@@ -227,14 +228,15 @@ export function OrderPanel({
 
       {/* Service */}
       <div className="flex flex-col gap-1.5">
-        <label className="text-sm font-bold text-foreground">Servico</label>
+        <label className="text-sm font-semibold text-foreground">Serviço</label>
         <div className="relative">
           <select
             value={selectedServiceId}
             onChange={(e) => setSelectedServiceId(e.target.value)}
             className="w-full appearance-none rounded-lg border border-border bg-secondary px-3 py-2.5 pr-10 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring"
           >
-            <option value="">Selecione um servico</option>
+            <option value="">Selecione um serviço</option>
+            {filteredServices.length === 0 && <option value="" disabled>Nenhum serviço encontrado</option>}
             {filteredServices.map((s) => (
               <option key={s.service} value={String(s.service)}>
                 {s.name} - R$ {parseFloat(s.rate).toFixed(2)} por 1000
@@ -260,10 +262,11 @@ export function OrderPanel({
 
       {/* Link */}
       <div className="flex flex-col gap-1.5">
-        <label className="text-sm font-bold text-foreground">Link</label>
+        <label className="text-sm font-semibold text-foreground">Link do perfil ou publicação</label>
         <input
           type="text"
           placeholder="https://www.instagram.com/seuperfil"
+          aria-label="Link do perfil ou publicação"
           value={link}
           onChange={(e) => setLink(e.target.value)}
           className="w-full rounded-lg border border-border bg-secondary px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-ring"
@@ -273,14 +276,14 @@ export function OrderPanel({
       {/* Quantity */}
       <div className="flex flex-col gap-1.5">
         <label className="text-sm font-bold text-foreground">
-          Nivel de Veiculacao (Campanha)
+          Quantidade
         </label>
         <input
           type="number"
           placeholder={
             selectedService
               ? `Min: ${selectedService.min} - Max: ${selectedService.max}`
-              : "Selecione um servico primeiro"
+              : "Selecione um serviço primeiro"
           }
           value={quantity}
           onChange={(e) => setQuantity(e.target.value)}
@@ -300,14 +303,14 @@ export function OrderPanel({
       {/* Cost Estimate */}
       <div className="flex flex-col gap-1.5">
         <label className="text-sm font-bold text-foreground">
-          Estimativa de Valor
+          Valor estimado
         </label>
         <input
           type="text"
           readOnly
           value={
             estimatedCost > 0
-              ? `R$ ${estimatedCost.toFixed(5)}`
+              ? `R$ ${estimatedCost.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 4 })}`
               : "R$ 0,00"
           }
           className="w-full rounded-lg border border-border bg-muted px-3 py-2.5 text-sm text-muted-foreground font-mono outline-none cursor-default"
