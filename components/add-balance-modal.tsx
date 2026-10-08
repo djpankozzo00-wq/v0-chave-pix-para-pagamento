@@ -1,17 +1,11 @@
 "use client"
 
 import { useState } from "react"
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Copy, CheckCircle2, KeyRound } from "lucide-react"
+import { Copy, CheckCircle2, KeyRound, AlertTriangle } from "lucide-react"
 
 const PIX_KEY = "a18a6815-1ab0-4e94-b20f-55d5fbb3ac9e"
 
@@ -24,144 +18,66 @@ export function AddBalanceModal({
   onOpenChange: (open: boolean) => void
   onBalanceAdded: (amount: number) => void
 }) {
-  const [step, setStep] = useState<"pix" | "confirm">("pix")
+  // Never credit a balance based only on a user-entered amount. A trusted payment
+  // provider and server-side payment confirmation are required.
+  void onBalanceAdded
+  const [step, setStep] = useState<"pix" | "details">("pix")
   const [copied, setCopied] = useState(false)
   const [amount, setAmount] = useState("")
-  const [error, setError] = useState("")
 
-  const resetModal = () => {
+  const close = () => {
     setStep("pix")
     setCopied(false)
     setAmount("")
-    setError("")
+    onOpenChange(false)
   }
 
-  const handleClose = (open: boolean) => {
-    if (!open) resetModal()
-    onOpenChange(open)
-  }
-
-  const handleCopyPix = () => {
-    navigator.clipboard.writeText(PIX_KEY)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 3000)
-  }
-
-  const handleConfirm = () => {
-    const value = parseFloat(amount.replace(",", "."))
-    if (isNaN(value) || value <= 0) {
-      setError("Informe um valor valido.")
-      return
+  const copyKey = async () => {
+    try {
+      await navigator.clipboard.writeText(PIX_KEY)
+      setCopied(true)
+      window.setTimeout(() => setCopied(false), 2500)
+    } catch {
+      setCopied(false)
     }
-    onBalanceAdded(value)
-    handleClose(false)
   }
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
+    <Dialog open={open} onOpenChange={(nextOpen) => { if (!nextOpen) close() }}>
       <DialogContent className="border-border bg-card sm:max-w-md">
-        {step === "pix" && (
+        {step === "pix" ? (
           <>
             <DialogHeader>
-              <DialogTitle className="text-foreground font-mono">
-                Adicionar Saldo via PIX
-              </DialogTitle>
-              <DialogDescription className="text-muted-foreground">
-                Copie a chave PIX abaixo, faca a transferencia pelo seu banco e depois confirme o valor.
-              </DialogDescription>
+              <DialogTitle>Adicionar saldo via PIX</DialogTitle>
+              <DialogDescription>Confira o destinatário no aplicativo do seu banco antes de transferir.</DialogDescription>
             </DialogHeader>
-
-            <div className="mt-4 flex flex-col items-center gap-5">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-                <KeyRound className="h-8 w-8 text-primary" />
-              </div>
-
-              <div className="w-full">
-                <Label className="text-muted-foreground text-xs">
-                  Chave PIX (Copia e Cola)
-                </Label>
-                <div className="mt-1 flex gap-2">
-                  <Input
-                    readOnly
-                    value={PIX_KEY}
-                    className="bg-secondary border-border text-foreground text-xs font-mono"
-                  />
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={handleCopyPix}
-                    className="shrink-0"
-                  >
-                    {copied ? (
-                      <CheckCircle2 className="h-4 w-4 text-primary" />
-                    ) : (
-                      <Copy className="h-4 w-4" />
-                    )}
-                  </Button>
+            <div className="mt-4 flex flex-col gap-5">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary"><KeyRound className="h-7 w-7" /></div>
+              <div>
+                <Label htmlFor="pix-key">Chave PIX cadastrada no projeto</Label>
+                <div className="mt-2 flex gap-2">
+                  <Input id="pix-key" readOnly value={PIX_KEY} className="min-w-0 bg-secondary font-mono text-xs" />
+                  <Button variant="outline" size="icon" onClick={copyKey} aria-label="Copiar chave PIX">{copied ? <CheckCircle2 className="h-4 w-4" /> : <Copy className="h-4 w-4" />}</Button>
                 </div>
-                {copied && (
-                  <p className="mt-1 text-xs text-primary">Chave copiada!</p>
-                )}
+                {copied && <p role="status" className="mt-2 text-xs text-primary">Chave copiada.</p>}
               </div>
-
-              <div className="w-full rounded-lg border border-border bg-secondary px-4 py-3">
-                <p className="text-sm font-medium text-foreground mb-2">Como adicionar saldo:</p>
-                <ol className="flex flex-col gap-1 text-xs text-muted-foreground list-decimal list-inside">
-                  <li>Copie a chave PIX acima</li>
-                  <li>Abra o app do seu banco</li>
-                  <li>{'Faca um PIX para a chave copiada'}</li>
-                  <li>{'Volte aqui e clique em "Ja paguei"'}</li>
-                </ol>
+              <div className="rounded-xl border border-amber-500/20 bg-amber-500/[0.07] p-4">
+                <div className="flex gap-3"><AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-400" /><div><p className="text-sm font-semibold">Crédito automático indisponível</p><p className="mt-1 text-xs leading-5 text-muted-foreground">A confirmação segura de pagamentos ainda não está integrada. Não faça uma transferência contando com a liberação automática do saldo.</p></div></div>
               </div>
-
-              <Button onClick={() => setStep("confirm")} className="w-full">
-                Ja paguei
-              </Button>
+              <Button className="w-full" onClick={() => setStep("details")}>Ver detalhes</Button>
             </div>
           </>
-        )}
-
-        {step === "confirm" && (
+        ) : (
           <>
             <DialogHeader>
-              <DialogTitle className="text-foreground font-mono">
-                Confirmar Valor
-              </DialogTitle>
-              <DialogDescription className="text-muted-foreground">
-                Informe o valor que voce transferiu via PIX para adicionar ao seu saldo.
-              </DialogDescription>
+              <DialogTitle>Pagamento ainda não integrado</DialogTitle>
+              <DialogDescription>Informar um valor não confirma que o dinheiro foi recebido.</DialogDescription>
             </DialogHeader>
-
             <div className="mt-4 flex flex-col gap-4">
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="amount" className="text-foreground">
-                  Valor transferido (R$)
-                </Label>
-                <Input
-                  id="amount"
-                  type="text"
-                  inputMode="decimal"
-                  placeholder="Ex: 50,00"
-                  value={amount}
-                  onChange={(e) => {
-                    setAmount(e.target.value)
-                    setError("")
-                  }}
-                  className="bg-secondary border-border text-foreground placeholder:text-muted-foreground font-mono text-lg"
-                />
-                {error && <p className="text-sm text-destructive">{error}</p>}
-              </div>
-
-              <Button onClick={handleConfirm} className="w-full">
-                Confirmar e adicionar saldo
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => setStep("pix")}
-                className="w-full"
-              >
-                Voltar
-              </Button>
+              <div><Label htmlFor="amount">Valor da transferência (R$), apenas para referência</Label><Input id="amount" className="mt-2 bg-secondary" inputMode="decimal" placeholder="Ex.: 50,00" value={amount} onChange={(event) => setAmount(event.target.value)} /></div>
+              <p className="text-sm leading-6 text-muted-foreground">Para ativar depósitos reais, configure um provedor PIX e valide o pagamento no servidor antes de creditar qualquer saldo.</p>
+              <Button onClick={close} className="w-full">Entendi</Button>
+              <Button onClick={() => setStep("pix")} variant="outline" className="w-full">Voltar</Button>
             </div>
           </>
         )}
