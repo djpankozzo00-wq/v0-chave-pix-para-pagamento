@@ -41,7 +41,23 @@ export function HomePage() {
   const [balanceModalOpen, setBalanceModalOpen] = useState(false)
 
   useEffect(() => {
-    setBalance(getBalance())
+    let active = true
+    fetch("/api/balance", { cache: "no-store" })
+      .then(async (response) => {
+        if (!response.ok) throw new Error("Não foi possível carregar o saldo do servidor.")
+        return response.json()
+      })
+      .then((result) => {
+        if (active && Number.isFinite(Number(result.balance))) {
+          setBalance(Math.round(Number(result.balance) * 100) / 100)
+        } else if (active) {
+          setBalance(getBalance())
+        }
+      })
+      .catch(() => {
+        if (active) setBalance(getBalance())
+      })
+    return () => { active = false }
   }, [])
 
   const handleBalanceAdded = (amount: number) => {
