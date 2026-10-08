@@ -195,7 +195,8 @@ export function OrderPanel({
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <input
           type="text"
-          placeholder="Buscar serviço pelo nome..."\n          aria-label="Buscar serviço pelo nome"
+          placeholder="Buscar serviço pelo nome..."
+          aria-label="Buscar serviço pelo nome"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="w-full rounded-lg border border-border bg-card px-3 py-2.5 pl-10 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-ring"
@@ -234,7 +235,8 @@ export function OrderPanel({
             onChange={(e) => setSelectedServiceId(e.target.value)}
             className="w-full appearance-none rounded-lg border border-border bg-secondary px-3 py-2.5 pr-10 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring"
           >
-            <option value="">Selecione um serviço</option>\n            {filteredServices.length === 0 && <option value="" disabled>Nenhum serviço encontrado</option>}
+            <option value="">Selecione um serviço</option>
+            {filteredServices.length === 0 && <option value="" disabled>Nenhum serviço encontrado</option>}
             {filteredServices.map((s) => (
               <option key={s.service} value={String(s.service)}>
                 {s.name} - R$ {parseFloat(s.rate).toFixed(2)} por 1000
@@ -263,7 +265,8 @@ export function OrderPanel({
         <label className="text-sm font-semibold text-foreground">Link do perfil ou publicação</label>
         <input
           type="text"
-          placeholder="https://www.instagram.com/seuperfil"\n          aria-label="Link do perfil ou publicação"
+          placeholder="https://www.instagram.com/seuperfil"
+          aria-label="Link do perfil ou publicação"
           value={link}
           onChange={(e) => setLink(e.target.value)}
           className="w-full rounded-lg border border-border bg-secondary px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-ring"
