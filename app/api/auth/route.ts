@@ -40,13 +40,17 @@ export async function POST(request: NextRequest) {
     const authData = await authResponse.json()
 
     if (!authResponse.ok) {
-      const message = typeof authData.msg === "string"
-        ? authData.msg
-        : typeof authData.message === "string"
-          ? authData.message
-          : typeof authData.error_description === "string"
-            ? authData.error_description
-            : "Não foi possível entrar. Confira o e-mail e a senha e tente novamente."
+      const rawMessage = [
+        authData.msg,
+        authData.message,
+        authData.error_description,
+        authData.error,
+      ].find((value) => typeof value === "string") as string | undefined
+
+      const message = mode === "login" && /invalid login credentials/i.test(rawMessage || "")
+        ? "E-mail ou senha não conferem. Se você ainda não criou uma conta, toque em Cadastrar e registre-se primeiro."
+        : rawMessage || "Não foi possível concluir. Confira os dados e tente novamente."
+
       return NextResponse.json({ error: message }, { status: authResponse.status })
     }
 
