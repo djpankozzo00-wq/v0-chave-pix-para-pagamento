@@ -1,9 +1,8 @@
 "use client"
 
-import Link from "next/link"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { ArrowLeft, LockKeyhole, Mail, UserRound } from "lucide-react"
+import { LockKeyhole, Mail, UserRound } from "lucide-react"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -58,7 +57,6 @@ export default function LoginPage() {
 
   return <main className="flex min-h-screen items-center justify-center bg-[#080b10] px-4 py-10 text-white">
     <div className="w-full max-w-md">
-      <Link href="/" className="mb-8 inline-flex items-center gap-2 text-sm text-slate-400 hover:text-white"><ArrowLeft className="h-4 w-4" /> Voltar ao início</Link>
       <div className="rounded-3xl border border-white/10 bg-[#10161e] p-6 shadow-2xl sm:p-8">
         <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-400/10 text-emerald-300"><LockKeyhole className="h-6 w-6" /></div>
         <h1 className="text-2xl font-black">{mode === "login" ? "Bem-vindo de volta" : "Crie sua conta"}</h1>
