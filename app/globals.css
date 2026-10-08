@@ -4,8 +4,8 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: oklch(0.96 0.01 200);
-  --foreground: oklch(0.2 0.02 240);
+  --background: oklch(0 0 0);
+  --foreground: oklch(0.98 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.2 0.02 240);
   --popover: oklch(1 0 0);
@@ -29,13 +29,13 @@
   --chart-4: oklch(0.75 0.15 80);
   --chart-5: oklch(0.6 0.22 330);
   --radius: 0.625rem;
-  --sidebar: oklch(0.96 0.01 200);
-  --sidebar-foreground: oklch(0.2 0.02 240);
+  --sidebar: oklch(0 0 0);
+  --sidebar-foreground: oklch(0.98 0 0);
   --sidebar-primary: oklch(0.7 0.14 195);
   --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent: oklch(0.94 0.01 200);
-  --sidebar-accent-foreground: oklch(0.2 0.02 240);
-  --sidebar-border: oklch(0.88 0.02 200);
+  --sidebar-accent: oklch(0.15 0 0);
+  --sidebar-accent-foreground: oklch(0.98 0 0);
+  --sidebar-border: oklch(0.25 0 0);
   --sidebar-ring: oklch(0.7 0.14 195);
 }
 
