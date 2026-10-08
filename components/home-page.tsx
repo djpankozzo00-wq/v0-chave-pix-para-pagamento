@@ -21,7 +21,7 @@ import { Header } from "@/components/header"
 import { OrderPanel } from "@/components/order-panel"
 import { AddBalanceModal } from "@/components/add-balance-modal"
 import { Footer } from "@/components/footer"
-import { getBalance, addBalance as addBalanceFn } from "@/lib/balance"
+import { getBalance, addBalance as addBalanceFn, setBalance as setStoredBalance } from "@/lib/balance"
 
 const categories = [
   { name: "Instagram", detail: "Serviços para perfis e publicações", icon: Instagram, tag: "POPULAR" },
@@ -49,7 +49,9 @@ export function HomePage() {
       })
       .then((result) => {
         if (active && Number.isFinite(Number(result.balance))) {
-          setBalance(Math.round(Number(result.balance) * 100) / 100)
+          const serverBalance = Math.round(Number(result.balance) * 100) / 100
+          setStoredBalance(serverBalance)
+          setBalance(serverBalance)
         } else if (active) {
           setBalance(getBalance())
         }
