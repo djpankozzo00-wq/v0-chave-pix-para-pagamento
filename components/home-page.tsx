@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { ShoppingBag, Search } from "lucide-react"
+import { ShoppingBag, Search, Headset } from "lucide-react"
 import { Header } from "@/components/header"
 import { OrderPanel } from "@/components/order-panel"
 import { MyOrders } from "@/components/my-orders"
@@ -90,6 +90,23 @@ export function HomePage() {
       </main>
 
       <Footer />
+
+      <a
+        href="https://services.zangi.com/dl/conversation/4220782184"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Falar com o suporte pelo Zangi"
+        className="fixed bottom-5 right-4 z-50 flex max-w-[calc(100vw-2rem)] items-center gap-3 rounded-full border border-emerald-300/30 bg-[#10251f] p-2 pr-4 text-white shadow-[0_8px_30px_rgba(0,0,0,0.45)] transition hover:bg-[#16372d] sm:bottom-6 sm:right-6"
+      >
+        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-emerald-400 text-[#07110d]">
+          <Headset className="h-6 w-6" />
+        </span>
+        <span className="min-w-0">
+          <span className="block text-sm font-semibold">Suporte</span>
+          <span className="block max-w-[190px] text-xs leading-4 text-emerald-100/80">Baixe o aplicativo Zangi para falar com o suporte.</span>
+        </span>
+      </a>
+
       <AddBalanceModal open={balanceModalOpen} onOpenChange={setBalanceModalOpen} onBalanceAdded={handleBalanceAdded} />
     </div>
   )
