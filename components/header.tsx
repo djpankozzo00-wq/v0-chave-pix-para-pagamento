@@ -13,6 +13,7 @@ export function Header({
 }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const [hasOpenOrders, setHasOpenOrders] = useState(false)
+  const [isAdmin, setIsAdmin] = useState(false)
 
   useEffect(() => {
     let active = true
@@ -20,16 +21,23 @@ export function Header({
       try {
         const response = await fetch("/api/admin/orders", { cache: "no-store" })
         if (!response.ok) {
-          if (active) setHasOpenOrders(false)
+          if (active) {
+            setIsAdmin(false)
+            setHasOpenOrders(false)
+          }
           return
         }
         const result = await response.json()
+        if (active) setIsAdmin(true)
         const pending = (result.orders || []).some(
           (order: { status?: string }) => order.status === "pending_manual" || order.status === "processing_manual",
         )
         if (active) setHasOpenOrders(pending)
       } catch {
-        if (active) setHasOpenOrders(false)
+        if (active) {
+          setIsAdmin(false)
+          setHasOpenOrders(false)
+        }
       }
     }
 
@@ -49,7 +57,7 @@ export function Header({
             Painel <span className="text-emerald-400">Social</span>
           </Link>
           <div className="flex items-center gap-3">
-            <Link
+            {isAdmin && <Link
               href="/admin"
               className="hidden items-center gap-1.5 rounded-lg border border-white/15 px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/10 sm:inline-flex"
             >
@@ -58,7 +66,7 @@ export function Header({
                 {hasOpenOrders && <span aria-label="Há pedidos em aberto" title="Há pedidos em aberto" className="absolute -right-2 -top-2 h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-[#080b10]" />}
               </span>
               Área administrativa
-            </Link>
+            </Link>}
             <button
               onClick={() => setMenuOpen(!menuOpen)}
               className="relative rounded-lg border border-white/15 p-2 text-white sm:hidden"
@@ -73,7 +81,7 @@ export function Header({
         {menuOpen && (
           <div className="border-t border-white/10 px-4 py-3 sm:hidden">
             <div className="mx-auto flex max-w-6xl flex-col gap-2">
-              <Link
+              {isAdmin && <Link
                 href="/admin"
                 onClick={() => setMenuOpen(false)}
                 className="flex items-center gap-2 rounded-lg border border-white/15 px-3 py-2 text-sm font-semibold text-white"
@@ -84,7 +92,7 @@ export function Header({
                 </span>
                 Área administrativa
                 {hasOpenOrders && <span className="ml-auto text-xs font-bold text-red-400">Pedidos em aberto</span>}
-              </Link>
+              </Link>}
               <button
                 onClick={() => {
                   onAddBalance()
