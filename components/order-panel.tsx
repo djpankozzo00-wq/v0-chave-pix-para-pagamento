@@ -69,12 +69,19 @@ export function OrderPanel({
       filtered = filtered.filter((s) => s.category === selectedCategory)
     }
     if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase()
-      filtered = filtered.filter(
-        (s) =>
-          s.name.toLowerCase().includes(q) ||
-          s.category.toLowerCase().includes(q)
+      const q = searchQuery.toLowerCase().trim()
+      const searchingFollowers = ["seguidor", "seguidores", "follower", "followers"].some((term) =>
+        q.includes(term)
       )
+      filtered = filtered.filter((s) => {
+        const serviceText = `${s.name} ${s.category}`.toLowerCase()
+        const matchesNameOrCategory = serviceText.includes(q)
+        const isInstagramFollowerService =
+          serviceText.includes("instagram") &&
+          (serviceText.includes("audiência de perfil") ||
+            serviceText.includes("atrair seguidores"))
+        return matchesNameOrCategory || (searchingFollowers && isInstagramFollowerService)
+      })
     }
     return filtered
   }, [services, selectedCategory, searchQuery])
@@ -239,7 +246,7 @@ export function OrderPanel({
             {filteredServices.length === 0 && <option value="" disabled>Nenhum serviço encontrado</option>}
             {filteredServices.map((s) => (
               <option key={s.service} value={String(s.service)}>
-                {s.name} - R$ {(parseFloat(s.rate) * 2).toFixed(2)} por 1000
+                {s.name.toLowerCase().includes("instagram") && (s.name.toLowerCase().includes("audiência de perfil") || s.name.toLowerCase().includes("atrair seguidores")) ? "👥 Seguidores Instagram — " : ""}{s.name} - R$ {(parseFloat(s.rate) * 2).toFixed(2)} por 1000
               </option>
             ))}
           </select>
