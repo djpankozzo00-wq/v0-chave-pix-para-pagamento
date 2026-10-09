@@ -89,7 +89,7 @@ export function OrderPanel({
     const rate = parseFloat(selectedService.rate)
     const qty = parseInt(quantity)
     if (isNaN(rate) || isNaN(qty)) return 0
-    return (rate * qty) / 1000
+    return (rate * qty * 2) / 1000
   }, [selectedService, quantity])
 
   const handleSubmit = async () => {
@@ -239,7 +239,7 @@ export function OrderPanel({
             {filteredServices.length === 0 && <option value="" disabled>Nenhum serviço encontrado</option>}
             {filteredServices.map((s) => (
               <option key={s.service} value={String(s.service)}>
-                {s.name} - R$ {parseFloat(s.rate).toFixed(2)} por 1000
+                {s.name} - R$ {(parseFloat(s.rate) * 2).toFixed(2)} por 1000
               </option>
             ))}
           </select>
