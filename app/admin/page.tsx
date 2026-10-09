@@ -2,13 +2,13 @@
 
 import { useCallback, useEffect, useState } from "react"
 import Link from "next/link"
-import { ArrowLeft, CircleDollarSign, ClipboardList, ShieldCheck, RefreshCw, CheckCircle2, Clock3, Copy } from "lucide-react"
+import { ArrowLeft, CircleDollarSign, ClipboardList, ShieldCheck, RefreshCw, CheckCircle2, Clock3, Copy, PackageCheck, PlayCircle } from "lucide-react"
 
 
 type SocialOrder = {
   id: string; user_email: string; service_id: number; service_name: string;
   target_link: string; quantity: number; cost: number | string;
-  provider_order_id: number | null; status: string; created_at: string;
+  provider_order_id: number | null; status: string; delivery_message?: string | null; created_at: string;
 }
 
 type DepositRequest = {
@@ -28,6 +28,8 @@ export default function AdminPage() {
   const [error, setError] = useState("")
   const [notice, setNotice] = useState("")
   const [approving, setApproving] = useState("")
+  const [updatingOrder, setUpdatingOrder] = useState("")
+  const [deliveryMessages, setDeliveryMessages] = useState<Record<string, string>>({})
 
   const loadRequests = useCallback(async () => {
     setLoading(true)
@@ -65,6 +67,32 @@ export default function AdminPage() {
     return () => window.clearInterval(timer)
   }, [loadRequests, loadOrders])
 
+  async function updateOrder(orderId: string, status: "pending_manual" | "processing_manual" | "completed") {
+    setUpdatingOrder(orderId)
+    setOrdersError("")
+    try {
+      const response = await fetch("/api/admin/orders", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          orderId,
+          status,
+          deliveryMessage: deliveryMessages[orderId] || "",
+        }),
+      })
+      const result = await response.json()
+      if (!response.ok) {
+        setOrdersError(result.error || "Não foi possível atualizar o pedido.")
+        return
+      }
+      await loadOrders()
+    } catch {
+      setOrdersError("Não foi possível atualizar o pedido.")
+    } finally {
+      setUpdatingOrder("")
+    }
+  }
+
   async function approve(id: string) {
     setApproving(id)
     setError("")
@@ -99,14 +127,23 @@ export default function AdminPage() {
       </div>
 
       <section className="mt-6 rounded-2xl border border-emerald-400/20 bg-[#10161e] p-5 sm:p-6">
-        <div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-lg font-bold">Compras dos usuários</h2><p className="mt-1 text-sm text-slate-400">Atualização automática a cada 8 segundos. Copie os dados para lançar o pedido no fornecedor.</p></div><button onClick={() => void loadOrders()} className="rounded-lg border border-white/10 px-3 py-2 text-sm hover:bg-white/5"><RefreshCw className="mr-2 inline h-4 w-4" />Atualizar compras</button></div>
+        <div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-lg font-bold">Compras dos usuários</h2><p className="mt-1 text-sm text-slate-400">Pedidos recebidos aqui para você executar manualmente no fornecedor. Nenhum pedido é enviado automaticamente.</p></div><button onClick={() => void loadOrders()} className="rounded-lg border border-white/10 px-3 py-2 text-sm hover:bg-white/5"><RefreshCw className="mr-2 inline h-4 w-4" />Atualizar compras</button></div>
         {ordersError && <p className="mt-3 text-sm text-rose-300">{ordersError}</p>}
         {ordersLoading ? <p className="py-8 text-center text-slate-400">Carregando compras...</p> : orders.length === 0 ? <p className="py-8 text-center text-slate-400">Nenhuma compra registrada ainda.</p> : <div className="mt-4 space-y-3">{orders.map((order) => <article key={order.id} className="rounded-xl border border-white/10 bg-black/20 p-4">
           <div className="flex flex-wrap justify-between gap-2"><div><h3 className="font-bold">{order.service_name}</h3><p className="mt-1 text-xs text-slate-500">Cliente: {order.user_email || "Não informado"}</p></div><strong>{Number(order.cost).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</strong></div>
-          <div className="mt-3 grid gap-2 text-sm sm:grid-cols-2"><p>Quantidade: <b>{order.quantity}</b></p><p>ID serviço fornecedor: <b>{order.service_id}</b></p><p>ID pedido fornecedor: <b>{order.provider_order_id ?? "Ainda não enviado"}</b></p><p>Status: <b>{order.status === "pending" ? "Enviado ao fornecedor" : order.status === "processing" ? "Processando" : order.status}</b></p></div>
+          <div className="mt-3 grid gap-2 text-sm sm:grid-cols-2"><p>Quantidade: <b>{order.quantity}</b></p><p>ID serviço fornecedor: <b>{order.service_id}</b></p><p>ID pedido fornecedor: <b>{order.provider_order_id ?? "Ainda não enviado"}</b></p><p>Status: <b>{order.status === "pending_manual" ? "Aguardando execução manual" : order.status === "processing_manual" ? "Em andamento (manual)" : order.status === "completed" ? "Entregue ao cliente" : order.status}</b></p></div>
           <p className="mt-3 break-all text-sm"><span className="text-slate-400">Link:</span> <a className="text-sky-300 underline" href={order.target_link} target="_blank" rel="noreferrer">{order.target_link}</a></p>
           <p className="mt-2 text-xs text-slate-500">Comprado em {new Date(order.created_at).toLocaleString("pt-BR")}</p>
           <button onClick={() => void navigator.clipboard.writeText("Serviço: " + order.service_name + "\nID do serviço: " + order.service_id + "\nLink: " + order.target_link + "\nQuantidade: " + order.quantity + "\nCliente: " + order.user_email + "\nPedido do painel: " + order.id)} className="mt-3 rounded-lg bg-emerald-400 px-3 py-2 text-sm font-bold text-slate-950"><Copy className="mr-2 inline h-4 w-4" />Copiar dados para fornecedor</button>
+          <div className="mt-4 space-y-2 rounded-lg border border-white/10 bg-white/[0.03] p-3">
+            <label className="block text-xs font-semibold text-slate-300">Mensagem para o cliente (opcional)</label>
+            <textarea value={deliveryMessages[order.id] ?? order.delivery_message ?? ""} onChange={(e) => setDeliveryMessages((prev) => ({ ...prev, [order.id]: e.target.value }))} placeholder="Ex.: Pedido concluído. Obrigado pela compra!" rows={2} className="w-full rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-sm text-white placeholder:text-slate-500" />
+            <div className="flex flex-wrap gap-2">
+              <button disabled={updatingOrder === order.id} onClick={() => void updateOrder(order.id, "processing_manual")} className="rounded-lg border border-sky-400/30 px-3 py-2 text-sm font-semibold text-sky-200 disabled:opacity-50"><PlayCircle className="mr-1 inline h-4 w-4" />{updatingOrder === order.id ? "Salvando..." : "Marcar em andamento"}</button>
+              <button disabled={updatingOrder === order.id} onClick={() => void updateOrder(order.id, "completed")} className="rounded-lg bg-emerald-400 px-3 py-2 text-sm font-bold text-slate-950 disabled:opacity-50"><PackageCheck className="mr-1 inline h-4 w-4" />Marcar como entregue</button>
+            </div>
+            {order.delivery_message && <p className="text-xs text-slate-400">Mensagem registrada: {order.delivery_message}</p>}
+          </div>
         </article>)}</div>}
       </section>
 
