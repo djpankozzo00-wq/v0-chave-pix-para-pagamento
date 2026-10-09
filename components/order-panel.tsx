@@ -96,7 +96,7 @@ export function OrderPanel({
     const rate = parseFloat(selectedService.rate)
     const qty = parseInt(quantity)
     if (isNaN(rate) || isNaN(qty)) return 0
-    return (rate * qty * 2) / 1000
+    return Math.round((((rate * qty * 2) / 1000) + Number.EPSILON) * 100) / 100
   }, [selectedService, quantity])
 
   const handleSubmit = async () => {
@@ -313,7 +313,7 @@ export function OrderPanel({
           readOnly
           value={
             estimatedCost > 0
-              ? `R$ ${estimatedCost.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 4 })}`
+              ? `R$ ${estimatedCost.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
               : "R$ 0,00"
           }
           className="w-full rounded-lg border border-border bg-muted px-3 py-2.5 text-sm text-muted-foreground font-mono outline-none cursor-default"
