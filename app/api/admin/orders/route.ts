@@ -15,7 +15,7 @@ export async function GET() {
   if (!config) return NextResponse.json({ error: "Banco de dados não configurado." }, { status: 500 })
 
   const query = new URLSearchParams({
-    select: "id,user_id,service_id,service_name,target_link,quantity,cost,provider_order_id,status,error_message,created_at,updated_at",
+    select: "id,user_email,service_id,service_name,target_link,quantity,cost,provider_order_id,status,error_message,created_at,updated_at",
     order: "created_at.desc",
     limit: "100",
   })
@@ -29,15 +29,5 @@ export async function GET() {
   }
 
   const rows = Array.isArray(result) ? result : []
-  const userIds = [...new Set(rows.map((row: any) => row.user_id).filter(Boolean))]
-  const emailsByUser: Record<string, string> = {}
-
-  // Resolve customer emails only through Supabase Auth's own user endpoint would require
-  // privileged credentials; user_email is therefore not guessed or exposed here.
-  return NextResponse.json({
-    orders: rows.map((row: any) => ({
-      ...row,
-      customer_email: emailsByUser[row.user_id] || "",
-    })),
-  })
+  return NextResponse.json({ orders: rows })
 }
