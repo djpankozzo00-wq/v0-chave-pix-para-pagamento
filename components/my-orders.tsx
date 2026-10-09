@@ -13,15 +13,16 @@ type SocialOrder = {
   provider_order_id: number | null
   status: string
   error_message?: string | null
+  delivery_message?: string | null
   created_at: string
   updated_at?: string
 }
 
 function statusLabel(status: string) {
   const normalized = (status || "").toLowerCase()
-  if (["pending", "submitted", "awaiting"].includes(normalized)) return "Pedido enviado — aguardando processamento"
-  if (["processing", "in_progress", "in progress"].includes(normalized)) return "Em andamento"
-  if (["completed", "complete", "success"].includes(normalized)) return "Concluído"
+  if (["pending_manual", "pending", "submitted", "awaiting"].includes(normalized)) return "Pedido recebido — aguardando atendimento"
+  if (["processing_manual", "processing", "in_progress", "in progress"].includes(normalized)) return "Em andamento"
+  if (["completed", "complete", "success"].includes(normalized)) return "Pedido entregue / concluído"
   if (["partial", "partially_completed"].includes(normalized)) return "Concluído parcialmente"
   if (["failed", "canceled", "cancelled", "refunded"].includes(normalized)) return "Falhou / cancelado"
   return status || "Aguardando atualização"
@@ -106,6 +107,7 @@ export function MyOrders() {
               <a className="mt-3 inline-flex max-w-full items-center gap-2 break-all text-sm text-sky-300 underline" href={order.target_link} target="_blank" rel="noreferrer">
                 <ExternalLink className="h-4 w-4 shrink-0" /> Ver link enviado
               </a>
+              {order.delivery_message && <p className="mt-3 rounded-lg border border-emerald-400/20 bg-emerald-400/10 p-3 text-sm text-emerald-100"><b>Mensagem do administrador:</b> {order.delivery_message}</p>}
               {order.error_message && <p className="mt-3 text-sm text-rose-200">{order.error_message}</p>}
             </article>
           ))}
