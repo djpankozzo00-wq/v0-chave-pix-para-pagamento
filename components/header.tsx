@@ -64,7 +64,7 @@ export function Header({
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-2.5 sm:px-6">
           <div className="flex items-center gap-2 text-sm text-slate-400">
             <Wallet className="h-4 w-4 text-emerald-400" />
-            <span>Saldo demonstrativo</span>
+            <span>Saldo</span>
           </div>
           <div className="flex items-center gap-3">
             <span className="font-mono text-sm font-bold sm:text-base">
