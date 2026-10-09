@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react"
 import Link from "next/link"
-import { ArrowLeft, CircleDollarSign, ClipboardList, ShieldCheck, RefreshCw, CheckCircle2, Clock3 } from "lucide-react"
+import { ArrowLeft, CircleDollarSign, ClipboardList, ShieldCheck, RefreshCw, CheckCircle2, Clock3, Copy } from "lucide-react"
 
 
 type SocialOrder = {
@@ -97,6 +97,18 @@ export default function AdminPage() {
         <section className="rounded-2xl border border-white/10 bg-[#10161e] p-5"><div className="flex items-center gap-2 text-slate-400"><ClipboardList className="h-5 w-5" /><p className="text-sm">Solicitações pendentes</p></div><p className="mt-3 text-3xl font-black">{requests.length}</p></section>
         <section className="rounded-2xl border border-white/10 bg-[#10161e] p-5"><div className="flex items-center gap-2 text-slate-400"><CircleDollarSign className="h-5 w-5" /><p className="text-sm">Total aguardando conferência</p></div><p className="mt-3 text-3xl font-black">{requests.reduce((sum, item) => sum + Number(item.amount || 0), 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</p></section>
       </div>
+
+      <section className="mt-6 rounded-2xl border border-emerald-400/20 bg-[#10161e] p-5 sm:p-6">
+        <div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-lg font-bold">Compras dos usuários</h2><p className="mt-1 text-sm text-slate-400">Atualização automática a cada 8 segundos. Copie os dados para lançar o pedido no fornecedor.</p></div><button onClick={() => void loadOrders()} className="rounded-lg border border-white/10 px-3 py-2 text-sm hover:bg-white/5"><RefreshCw className="mr-2 inline h-4 w-4" />Atualizar compras</button></div>
+        {ordersError && <p className="mt-3 text-sm text-rose-300">{ordersError}</p>}
+        {ordersLoading ? <p className="py-8 text-center text-slate-400">Carregando compras...</p> : orders.length === 0 ? <p className="py-8 text-center text-slate-400">Nenhuma compra registrada ainda.</p> : <div className="mt-4 space-y-3">{orders.map((order) => <article key={order.id} className="rounded-xl border border-white/10 bg-black/20 p-4">
+          <div className="flex flex-wrap justify-between gap-2"><div><h3 className="font-bold">{order.service_name}</h3><p className="mt-1 text-xs text-slate-500">Cliente: {order.user_email || "Não informado"}</p></div><strong>{Number(order.cost).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</strong></div>
+          <div className="mt-3 grid gap-2 text-sm sm:grid-cols-2"><p>Quantidade: <b>{order.quantity}</b></p><p>ID serviço fornecedor: <b>{order.service_id}</b></p><p>ID pedido fornecedor: <b>{order.provider_order_id ?? "Ainda não enviado"}</b></p><p>Status: <b>{order.status === "pending" ? "Enviado ao fornecedor" : order.status === "processing" ? "Processando" : order.status}</b></p></div>
+          <p className="mt-3 break-all text-sm"><span className="text-slate-400">Link:</span> <a className="text-sky-300 underline" href={order.target_link} target="_blank" rel="noreferrer">{order.target_link}</a></p>
+          <p className="mt-2 text-xs text-slate-500">Comprado em {new Date(order.created_at).toLocaleString("pt-BR")}</p>
+          <button onClick={() => void navigator.clipboard.writeText("Serviço: " + order.service_name + "\nID do serviço: " + order.service_id + "\nLink: " + order.target_link + "\nQuantidade: " + order.quantity + "\nCliente: " + order.user_email + "\nPedido do painel: " + order.id)} className="mt-3 rounded-lg bg-emerald-400 px-3 py-2 text-sm font-bold text-slate-950"><Copy className="mr-2 inline h-4 w-4" />Copiar dados para fornecedor</button>
+        </article>)}</div>}
+      </section>
 
       <section className="mt-6 rounded-2xl border border-white/10 bg-[#10161e] p-5 sm:p-6">
         <div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-lg font-bold">Solicitações de depósito</h2><p className="mt-1 text-sm text-slate-400">Aprove somente depois de confirmar o valor e o recebimento no aplicativo do banco.</p></div><button onClick={() => void loadRequests()} disabled={loading} className="inline-flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-sm hover:bg-white/5 disabled:opacity-50"><RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} /> Atualizar</button></div>
