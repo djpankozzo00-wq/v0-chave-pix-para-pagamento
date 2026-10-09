@@ -16,7 +16,6 @@ type Service = {
 }
 
 export function OrderPanel({
-  balance: _balance,
   onBalanceChange,
 }: {
   balance: number
