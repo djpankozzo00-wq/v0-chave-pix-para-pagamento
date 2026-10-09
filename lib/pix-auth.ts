@@ -29,7 +29,7 @@ export async function getAuthenticatedUser(): Promise<{ user: AuthenticatedUser;
 
 export function isPixAdmin(email?: string): boolean {
   const normalizedEmail = (email || "").trim().toLowerCase()
-  return ["djpankozzo00@gmail.com", "djpankozzo@gmail.com"].includes(normalizedEmail)
+  return normalizedEmail === "djpankozzo@gmail.com"
 }
 
 export function getSupabaseConfig() {
