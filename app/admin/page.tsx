@@ -96,7 +96,7 @@ export default function AdminPage() {
   }
 
   async function deleteCompletedOrders() {
-    if (!window.confirm("Tem certeza que deseja apagar TODOS os pedidos concluídos? Esta ação não pode ser desfeita.")) return
+    if (!window.confirm("Tem certeza que deseja apagar TODOS os pedidos concluídos e com falha (failed)? Esta ação não pode ser desfeita.")) return
     setDeletingCompleted(true)
     setOrdersError("")
     setOrdersNotice("")
@@ -104,7 +104,7 @@ export default function AdminPage() {
       const response = await fetch("/api/admin/orders", { method: "DELETE" })
       const result = await response.json()
       if (!response.ok) {
-        setOrdersError(result.error || "Não foi possível apagar os pedidos concluídos.")
+        setOrdersError(result.error || "Não foi possível apagar os pedidos concluídos e com falha.")
         return
       }
       setOrdersNotice(`${result.deletedCount ?? 0} pedido(s) concluído(s) apagado(s).`)
@@ -150,7 +150,7 @@ export default function AdminPage() {
       </div>
 
       <section className="mt-6 rounded-2xl border border-emerald-400/20 bg-[#10161e] p-5 sm:p-6">
-        <div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-lg font-bold">Compras dos usuários</h2><p className="mt-1 text-sm text-slate-400">Pedidos recebidos aqui para você executar manualmente no fornecedor. Nenhum pedido é enviado automaticamente.</p></div><div className="flex flex-wrap gap-2"><button onClick={() => void loadOrders()} className="rounded-lg border border-white/10 px-3 py-2 text-sm hover:bg-white/5"><RefreshCw className="mr-2 inline h-4 w-4" />Atualizar compras</button><button onClick={() => void deleteCompletedOrders()} disabled={deletingCompleted || !orders.some((order) => order.status === "completed")} className="rounded-lg bg-rose-500 px-3 py-2 text-sm font-bold text-white hover:bg-rose-400 disabled:cursor-not-allowed disabled:opacity-50"><Trash2 className="mr-2 inline h-4 w-4" />{deletingCompleted ? "Apagando..." : "Apagar pedidos concluídos"}</button></div></div>
+        <div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-lg font-bold">Compras dos usuários</h2><p className="mt-1 text-sm text-slate-400">Pedidos recebidos aqui para você executar manualmente no fornecedor. Nenhum pedido é enviado automaticamente.</p></div><div className="flex flex-wrap gap-2"><button onClick={() => void loadOrders()} className="rounded-lg border border-white/10 px-3 py-2 text-sm hover:bg-white/5"><RefreshCw className="mr-2 inline h-4 w-4" />Atualizar compras</button><button onClick={() => void deleteCompletedOrders()} disabled={deletingCompleted || !orders.some((order) => order.status === "completed" || order.status === "failed")} className="rounded-lg bg-rose-500 px-3 py-2 text-sm font-bold text-white hover:bg-rose-400 disabled:cursor-not-allowed disabled:opacity-50"><Trash2 className="mr-2 inline h-4 w-4" />{deletingCompleted ? "Apagando..." : "Apagar pedidos concluídos"}</button></div></div>
         {ordersNotice && <p role="status" className="mt-3 text-sm text-emerald-300">{ordersNotice}</p>}
         {ordersError && <p className="mt-3 text-sm text-rose-300">{ordersError}</p>}
         {ordersLoading ? <p className="py-8 text-center text-slate-400">Carregando compras...</p> : orders.length === 0 ? <p className="py-8 text-center text-slate-400">Nenhuma compra registrada ainda.</p> : <div className="mt-4 space-y-3">{orders.map((order) => <article key={order.id} className="rounded-xl border border-white/10 bg-black/20 p-4">
