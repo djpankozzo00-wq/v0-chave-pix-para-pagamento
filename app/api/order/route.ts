@@ -100,6 +100,7 @@ export async function POST(request: Request) {
       p_target_link: link,
       p_quantity: quantity,
       p_cost: cost,
+      p_user_email: session.user.email || "",
     })
     const reserved = (Array.isArray(reserveResult) ? reserveResult[0] : reserveResult) as {
       order_id?: string
