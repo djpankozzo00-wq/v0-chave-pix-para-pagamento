@@ -15,24 +15,29 @@ export function HomePage() {
 
   useEffect(() => {
     let active = true
-    fetch("/api/balance", { cache: "no-store" })
-      .then(async (response) => {
-        if (!response.ok) throw new Error("Não foi possível carregar o saldo do servidor.")
-        return response.json()
-      })
-      .then((result) => {
+
+    const refreshBalance = async () => {
+      try {
+        const response = await fetch("/api/balance", { cache: "no-store" })
+        if (!response.ok) return
+        const result = await response.json()
         if (active && Number.isFinite(Number(result.balance))) {
           const serverBalance = Math.round(Number(result.balance) * 100) / 100
           setStoredBalance(serverBalance)
           setBalance(serverBalance)
-        } else if (active) {
-          setBalance(0)
         }
-      })
-      .catch(() => {
-        if (active) setBalance(0)
-      })
-    return () => { active = false }
+      } catch {
+        // Mantém o último saldo conhecido se a rede falhar temporariamente.
+      }
+    }
+
+    void refreshBalance()
+    const timer = window.setInterval(() => void refreshBalance(), 5000)
+
+    return () => {
+      active = false
+      window.clearInterval(timer)
+    }
   }, [])
 
   const handleBalanceAdded = (_amount: number) => {
