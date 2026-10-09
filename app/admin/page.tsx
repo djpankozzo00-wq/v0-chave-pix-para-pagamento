@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react"
 import Link from "next/link"
-import { ArrowLeft, CircleDollarSign, ClipboardList, ShieldCheck, RefreshCw, CheckCircle2, Clock3, Copy, PackageCheck, PlayCircle } from "lucide-react"
+import { ArrowLeft, CircleDollarSign, ClipboardList, ShieldCheck, RefreshCw, CheckCircle2, Clock3, Copy, PackageCheck, PlayCircle, Trash2 } from "lucide-react"
 
 
 type SocialOrder = {
@@ -30,6 +30,8 @@ export default function AdminPage() {
   const [approving, setApproving] = useState("")
   const [updatingOrder, setUpdatingOrder] = useState("")
   const [deliveryMessages, setDeliveryMessages] = useState<Record<string, string>>({})
+  const [deletingCompleted, setDeletingCompleted] = useState(false)
+  const [ordersNotice, setOrdersNotice] = useState("")
 
   const loadRequests = useCallback(async () => {
     setLoading(true)
@@ -93,6 +95,27 @@ export default function AdminPage() {
     }
   }
 
+  async function deleteCompletedOrders() {
+    if (!window.confirm("Tem certeza que deseja apagar TODOS os pedidos concluídos? Esta ação não pode ser desfeita.")) return
+    setDeletingCompleted(true)
+    setOrdersError("")
+    setOrdersNotice("")
+    try {
+      const response = await fetch("/api/admin/orders", { method: "DELETE" })
+      const result = await response.json()
+      if (!response.ok) {
+        setOrdersError(result.error || "Não foi possível apagar os pedidos concluídos.")
+        return
+      }
+      setOrdersNotice(`${result.deletedCount ?? 0} pedido(s) concluído(s) apagado(s).`)
+      await loadOrders()
+    } catch {
+      setOrdersError("Não foi possível apagar os pedidos concluídos.")
+    } finally {
+      setDeletingCompleted(false)
+    }
+  }
+
   async function approve(id: string) {
     setApproving(id)
     setError("")
@@ -127,7 +150,8 @@ export default function AdminPage() {
       </div>
 
       <section className="mt-6 rounded-2xl border border-emerald-400/20 bg-[#10161e] p-5 sm:p-6">
-        <div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-lg font-bold">Compras dos usuários</h2><p className="mt-1 text-sm text-slate-400">Pedidos recebidos aqui para você executar manualmente no fornecedor. Nenhum pedido é enviado automaticamente.</p></div><button onClick={() => void loadOrders()} className="rounded-lg border border-white/10 px-3 py-2 text-sm hover:bg-white/5"><RefreshCw className="mr-2 inline h-4 w-4" />Atualizar compras</button></div>
+        <div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-lg font-bold">Compras dos usuários</h2><p className="mt-1 text-sm text-slate-400">Pedidos recebidos aqui para você executar manualmente no fornecedor. Nenhum pedido é enviado automaticamente.</p></div><div className="flex flex-wrap gap-2"><button onClick={() => void loadOrders()} className="rounded-lg border border-white/10 px-3 py-2 text-sm hover:bg-white/5"><RefreshCw className="mr-2 inline h-4 w-4" />Atualizar compras</button><button onClick={() => void deleteCompletedOrders()} disabled={deletingCompleted || !orders.some((order) => order.status === "completed")} className="rounded-lg bg-rose-500 px-3 py-2 text-sm font-bold text-white hover:bg-rose-400 disabled:cursor-not-allowed disabled:opacity-50"><Trash2 className="mr-2 inline h-4 w-4" />{deletingCompleted ? "Apagando..." : `Apagar concluídos (${orders.filter((order) => order.status === "completed").length})`}</button></div></div>
+        {ordersNotice && <p role="status" className="mt-3 text-sm text-emerald-300">{ordersNotice}</p>}
         {ordersError && <p className="mt-3 text-sm text-rose-300">{ordersError}</p>}
         {ordersLoading ? <p className="py-8 text-center text-slate-400">Carregando compras...</p> : orders.length === 0 ? <p className="py-8 text-center text-slate-400">Nenhuma compra registrada ainda.</p> : <div className="mt-4 space-y-3">{orders.map((order) => <article key={order.id} className="rounded-xl border border-white/10 bg-black/20 p-4">
           <div className="flex flex-wrap justify-between gap-2"><div><h3 className="font-bold">{order.service_name}</h3><p className="mt-1 text-xs text-slate-500">Cliente: {order.user_email || "Não informado"}</p></div><strong>{Number(order.cost).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</strong></div>
