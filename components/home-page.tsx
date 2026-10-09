@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { ShoppingBag, Search } from "lucide-react"
 import { Header } from "@/components/header"
 import { OrderPanel } from "@/components/order-panel"
+import { MyOrders } from "@/components/my-orders"
 import { AddBalanceModal } from "@/components/add-balance-modal"
 import { Footer } from "@/components/footer"
 import { setBalance as setStoredBalance } from "@/lib/balance"
@@ -79,6 +80,8 @@ export function HomePage() {
             <OrderPanel balance={balance} onBalanceChange={setBalance} />
           </div>
         </section>
+
+        <MyOrders />
       </main>
 
       <Footer />
