@@ -94,13 +94,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Não foi possível calcular o valor do pedido." }, { status: 400 })
     }
 
-    const reserved = await callUserRpc(config, session.accessToken, "reserve_social_order", {
+    const reserveResult = await callUserRpc(config, session.accessToken, "reserve_social_order", {
       p_service_id: serviceId,
       p_service_name: String(service.name || `Serviço ${serviceId}`).slice(0, 250),
       p_target_link: link,
       p_quantity: quantity,
       p_cost: cost,
-    }) as { order_id?: string; remaining_balance?: number }
+    })
+    const reserved = (Array.isArray(reserveResult) ? reserveResult[0] : reserveResult) as {
+      order_id?: string
+      remaining_balance?: number
+    } | null
 
     reservedOrderId = reserved?.order_id || null
     if (!reservedOrderId) {
