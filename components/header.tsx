@@ -13,36 +13,53 @@ export function Header({
 }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const [hasOpenOrders, setHasOpenOrders] = useState(false)
+  const [hasPendingDeposits, setHasPendingDeposits] = useState(false)
   const [isAdmin, setIsAdmin] = useState(false)
+  const hasAdminNotifications = hasOpenOrders || hasPendingDeposits
 
   useEffect(() => {
     let active = true
-    const checkOpenOrders = async () => {
+    const checkAdminNotifications = async () => {
       try {
-        const response = await fetch("/api/admin/orders", { cache: "no-store" })
-        if (!response.ok) {
+        const [ordersResponse, depositsResponse] = await Promise.all([
+          fetch("/api/admin/orders", { cache: "no-store" }),
+          fetch("/api/deposits", { cache: "no-store" }),
+        ])
+
+        if (!ordersResponse.ok) {
           if (active) {
             setIsAdmin(false)
             setHasOpenOrders(false)
+            setHasPendingDeposits(false)
           }
           return
         }
-        const result = await response.json()
+
+        const ordersResult = await ordersResponse.json()
+        const depositsResult = depositsResponse.ok ? await depositsResponse.json() : { requests: [] }
         if (active) setIsAdmin(true)
-        const pending = (result.orders || []).some(
+
+        const pendingOrders = (ordersResult.orders || []).some(
           (order: { status?: string }) => order.status === "pending_manual" || order.status === "processing_manual",
         )
-        if (active) setHasOpenOrders(pending)
+        const pendingDeposits = (depositsResult.requests || []).some(
+          (deposit: { status?: string }) => deposit.status === "pending",
+        )
+        if (active) {
+          setHasOpenOrders(pendingOrders)
+          setHasPendingDeposits(pendingDeposits)
+        }
       } catch {
         if (active) {
           setIsAdmin(false)
           setHasOpenOrders(false)
+          setHasPendingDeposits(false)
         }
       }
     }
 
-    void checkOpenOrders()
-    const timer = window.setInterval(() => void checkOpenOrders(), 8000)
+    void checkAdminNotifications()
+    const timer = window.setInterval(() => void checkAdminNotifications(), 8000)
     return () => {
       active = false
       window.clearInterval(timer)
@@ -63,7 +80,7 @@ export function Header({
             >
               <span className="relative inline-flex">
                 <ShieldCheck className="h-4 w-4 text-emerald-400" />
-                {hasOpenOrders && <span aria-label="Há pedidos em aberto" title="Há pedidos em aberto" className="absolute -right-2 -top-2 h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-[#080b10]" />}
+                {hasAdminNotifications && <span aria-label="Há pedidos ou depósitos pendentes" title="Há pedidos ou depósitos pendentes" className="absolute -right-2 -top-2 h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-[#080b10]" />}
               </span>
               Área administrativa
             </Link>}
@@ -74,7 +91,7 @@ export function Header({
               aria-expanded={menuOpen}
             >
               {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-              {hasOpenOrders && <span aria-label="Há pedidos em aberto" title="Há pedidos em aberto" className="absolute -right-1 -top-1 h-3 w-3 rounded-full bg-red-500 ring-2 ring-[#080b10]" />}
+              {hasAdminNotifications && <span aria-label="Há pedidos ou depósitos pendentes" title="Há pedidos ou depósitos pendentes" className="absolute -right-1 -top-1 h-3 w-3 rounded-full bg-red-500 ring-2 ring-[#080b10]" />}
             </button>
           </div>
         </div>
@@ -88,10 +105,10 @@ export function Header({
               >
                 <span className="relative inline-flex">
                   <ShieldCheck className="h-4 w-4 text-emerald-400" />
-                  {hasOpenOrders && <span aria-label="Há pedidos em aberto" title="Há pedidos em aberto" className="absolute -right-2 -top-1 h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-[#080b10]" />}
+                  {hasAdminNotifications && <span aria-label="Há pedidos ou depósitos pendentes" title="Há pedidos ou depósitos pendentes" className="absolute -right-2 -top-1 h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-[#080b10]" />}
                 </span>
                 Área administrativa
-                {hasOpenOrders && <span className="ml-auto text-xs font-bold text-red-400">Pedidos em aberto</span>}
+                {hasAdminNotifications && <span className="ml-auto text-xs font-bold text-red-400">{hasPendingDeposits && hasOpenOrders ? "Pedidos e depósitos pendentes" : hasPendingDeposits ? "Depósitos pendentes" : "Pedidos em aberto"}</span>}
               </Link>}
               <button
                 onClick={() => {
