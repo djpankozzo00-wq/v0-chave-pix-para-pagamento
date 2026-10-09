@@ -108,6 +108,7 @@ export function MyOrders() {
                 <ExternalLink className="h-4 w-4 shrink-0" /> Ver link enviado
               </a>
               {order.delivery_message && <p className="mt-3 rounded-lg border border-emerald-400/20 bg-emerald-400/10 p-3 text-sm text-emerald-100"><b>Mensagem do administrador:</b> {order.delivery_message}</p>}
+              {order.delivery_message && <p className="mt-3 rounded-lg border border-emerald-400/20 bg-emerald-400/10 p-3 text-sm text-emerald-100"><b>Mensagem do administrador:</b> {order.delivery_message}</p>}
               {order.error_message && <p className="mt-3 text-sm text-rose-200">{order.error_message}</p>}
             </article>
           ))}
