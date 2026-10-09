@@ -33,6 +33,35 @@ export async function GET() {
 }
 
 
+
+export async function DELETE() {
+  const session = await getAuthenticatedUser()
+  if (!session) return NextResponse.json({ error: "Entre na sua conta para continuar." }, { status: 401 })
+  if (!isPixAdmin(session.user.email)) {
+    return NextResponse.json({ error: "Acesso restrito ao administrador." }, { status: 403 })
+  }
+
+  const config = getSupabaseConfig()
+  if (!config) return NextResponse.json({ error: "Banco de dados não configurado." }, { status: 500 })
+
+  const response = await fetch(`${config.url}/rest/v1/rpc/admin_delete_completed_social_orders`, {
+    method: "POST",
+    headers: {
+      apikey: config.key,
+      Authorization: `Bearer ${session.accessToken}`,
+      "Content-Type": "application/json",
+    },
+    body: "{}",
+    cache: "no-store",
+  })
+  const result = await response.json().catch(() => null)
+  if (!response.ok || typeof result !== "number") {
+    return NextResponse.json({ error: "Não foi possível apagar os pedidos concluídos." }, { status: response.ok ? 500 : response.status })
+  }
+
+  return NextResponse.json({ ok: true, deletedCount: result })
+}
+
 export async function PATCH(request: Request) {
   const session = await getAuthenticatedUser()
   if (!session) return NextResponse.json({ error: "Entre na sua conta para continuar." }, { status: 401 })
