@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react"
 import { Search, Loader2, AlertCircle, ChevronDown } from "lucide-react"
-import { deductBalance, addOrder } from "@/lib/balance"
+import { addOrder } from "@/lib/balance"
 
 type Service = {
   service: number
@@ -16,7 +16,7 @@ type Service = {
 }
 
 export function OrderPanel({
-  balance,
+  balance: _balance,
   onBalanceChange,
 }: {
   balance: number
@@ -118,14 +118,6 @@ export function OrderPanel({
       })
       return
     }
-    if (estimatedCost > balance) {
-      setSubmitMessage({
-        type: "error",
-        text: "Saldo insuficiente. Adicione mais saldo.",
-      })
-      return
-    }
-
     setSubmitting(true)
     setSubmitMessage(null)
 
@@ -143,11 +135,15 @@ export function OrderPanel({
       const data = await res.json()
 
       if (!res.ok || data.error) {
+        if (typeof data.balance === "number" && Number.isFinite(data.balance)) {
+          onBalanceChange(data.balance)
+        }
         throw new Error(data.error || "Erro ao criar pedido.")
       }
 
-      const newBalance = deductBalance(estimatedCost)
-      onBalanceChange(newBalance)
+      if (typeof data.balance === "number" && Number.isFinite(data.balance)) {
+        onBalanceChange(data.balance)
+      }
 
       addOrder({
         id: data.order ? String(data.order) : String(Date.now()),
@@ -155,7 +151,7 @@ export function OrderPanel({
         serviceName: selectedService.name,
         link: link.trim(),
         quantity: qty,
-        cost: estimatedCost,
+        cost: Number(data.cost ?? estimatedCost),
         date: new Date().toISOString(),
         status: "pending",
       })
