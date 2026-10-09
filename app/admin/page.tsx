@@ -4,6 +4,13 @@ import { useCallback, useEffect, useState } from "react"
 import Link from "next/link"
 import { ArrowLeft, CircleDollarSign, ClipboardList, ShieldCheck, RefreshCw, CheckCircle2, Clock3 } from "lucide-react"
 
+
+type SocialOrder = {
+  id: string; user_email: string; service_id: number; service_name: string;
+  target_link: string; quantity: number; cost: number | string;
+  provider_order_id: number | null; status: string; created_at: string;
+}
+
 type DepositRequest = {
   id: string
   user_email: string
@@ -14,6 +21,9 @@ type DepositRequest = {
 
 export default function AdminPage() {
   const [requests, setRequests] = useState<DepositRequest[]>([])
+  const [orders, setOrders] = useState<SocialOrder[]>([])
+  const [ordersError, setOrdersError] = useState("")
+  const [ordersLoading, setOrdersLoading] = useState(true)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
   const [notice, setNotice] = useState("")
@@ -38,7 +48,22 @@ export default function AdminPage() {
     }
   }, [])
 
-  useEffect(() => { void loadRequests() }, [loadRequests])
+  const loadOrders = useCallback(async () => {
+    try {
+      const response = await fetch("/api/admin/orders", { cache: "no-store" })
+      const result = await response.json()
+      if (!response.ok) { setOrdersError(result.error || "Não foi possível carregar compras."); return }
+      setOrders(result.orders || [])
+      setOrdersError("")
+    } catch { setOrdersError("Não foi possível atualizar compras.") }
+    finally { setOrdersLoading(false) }
+  }, [])
+
+  useEffect(() => {
+    void loadRequests(); void loadOrders()
+    const timer = window.setInterval(() => { void loadRequests(); void loadOrders() }, 8000)
+    return () => window.clearInterval(timer)
+  }, [loadRequests, loadOrders])
 
   async function approve(id: string) {
     setApproving(id)
