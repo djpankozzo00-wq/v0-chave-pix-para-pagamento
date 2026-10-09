@@ -70,7 +70,7 @@ export function MyOrders() {
           <ClipboardList className="h-5 w-5 text-emerald-300" />
           <div>
             <h2 className="font-semibold">Meus pedidos</h2>
-            <p className="mt-1 text-xs text-slate-400">Atualização automática a cada 8 segundos.</p>
+            <p className="mt-1 text-xs text-slate-400">Atualiza a cada 8 segundos. Os pedidos ficam visíveis aqui por 24 horas.</p>
           </div>
         </div>
         <button onClick={() => void loadOrders()} className="inline-flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-sm hover:bg-white/5">
