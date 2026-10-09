@@ -12,7 +12,18 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")\n  const [accessToken, setAccessToken] = useState("")\n\n  useEffect(() => {\n    const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""))\n    const token = hash.get("access_token")\n    if (token && hash.get("type") === "recovery") {\n      setAccessToken(token)\n      setMode("reset")\n      window.history.replaceState(null, "", window.location.pathname + window.location.search)\n    }\n  }, [])
+  const [password, setPassword] = useState("")
+  const [accessToken, setAccessToken] = useState("")
+
+  useEffect(() => {
+    const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""))
+    const token = hash.get("access_token")
+    if (token && hash.get("type") === "recovery") {
+      setAccessToken(token)
+      setMode("reset")
+      window.history.replaceState(null, "", window.location.pathname + window.location.search)
+    }
+  }, [])
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -34,7 +45,14 @@ export default function LoginPage() {
       }
 
       setNotice(result.message || "Operação concluída.")
-      if (result.ok && mode === "reset") {\n        setNotice(result.message || "Senha alterada. Agora entre com a nova senha.")\n        setMode("login")\n        setPassword("")\n        setAccessToken("")\n        return\n      }\n      if (result.ok && mode === "recover") {
+      if (result.ok && mode === "reset") {
+        setNotice(result.message || "Senha alterada. Agora entre com a nova senha.")
+        setMode("login")
+        setPassword("")
+        setAccessToken("")
+        return
+      }
+      if (result.ok && mode === "recover") {
         setNotice(result.message || "Se o e-mail estiver cadastrado, você receberá um link para redefinir a senha.")
         return
       }
