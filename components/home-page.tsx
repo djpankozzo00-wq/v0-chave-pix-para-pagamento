@@ -6,7 +6,7 @@ import { Header } from "@/components/header"
 import { OrderPanel } from "@/components/order-panel"
 import { AddBalanceModal } from "@/components/add-balance-modal"
 import { Footer } from "@/components/footer"
-import { getBalance, addBalance as addBalanceFn, setBalance as setStoredBalance } from "@/lib/balance"
+import { setBalance as setStoredBalance } from "@/lib/balance"
 
 export function HomePage() {
   const [balance, setBalance] = useState(0)
@@ -25,18 +25,26 @@ export function HomePage() {
           setStoredBalance(serverBalance)
           setBalance(serverBalance)
         } else if (active) {
-          setBalance(getBalance())
+          setBalance(0)
         }
       })
       .catch(() => {
-        if (active) setBalance(getBalance())
+        if (active) setBalance(0)
       })
     return () => { active = false }
   }, [])
 
-  const handleBalanceAdded = (amount: number) => {
-    const newBalance = addBalanceFn(amount)
-    setBalance(newBalance)
+  const handleBalanceAdded = (_amount: number) => {
+    fetch("/api/balance", { cache: "no-store" })
+      .then((response) => response.ok ? response.json() : Promise.reject())
+      .then((result) => {
+        if (Number.isFinite(Number(result.balance))) {
+          const serverBalance = Math.round(Number(result.balance) * 100) / 100
+          setStoredBalance(serverBalance)
+          setBalance(serverBalance)
+        }
+      })
+      .catch(() => setBalance(0))
   }
 
   return (
