@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { Plus, Wallet, Menu, X } from "lucide-react"
+import { Plus, Wallet, Menu, X, ShieldCheck } from "lucide-react"
 import { useState } from "react"
 
 export function Header({
@@ -20,7 +20,13 @@ export function Header({
           <Link href="/" className="text-lg font-black tracking-tight sm:text-xl">
             Painel <span className="text-emerald-400">Social</span>
           </Link>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
+            <Link
+              href="/admin"
+              className="hidden items-center gap-1.5 rounded-lg border border-white/15 px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/10 sm:inline-flex"
+            >
+              <ShieldCheck className="h-4 w-4 text-emerald-400" /> Área administrativa
+            </Link>
             <button
               onClick={() => setMenuOpen(!menuOpen)}
               className="rounded-lg border border-white/15 p-2 text-white sm:hidden"
@@ -34,6 +40,13 @@ export function Header({
         {menuOpen && (
           <div className="border-t border-white/10 px-4 py-3 sm:hidden">
             <div className="mx-auto flex max-w-6xl flex-col gap-2">
+              <Link
+                href="/admin"
+                onClick={() => setMenuOpen(false)}
+                className="flex items-center gap-2 rounded-lg border border-white/15 px-3 py-2 text-sm font-semibold text-white"
+              >
+                <ShieldCheck className="h-4 w-4 text-emerald-400" /> Área administrativa
+              </Link>
               <button
                 onClick={() => {
                   onAddBalance()
