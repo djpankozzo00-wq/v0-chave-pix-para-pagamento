@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { createOrder, getServices } from "@/lib/instabarato"
+import { getServices } from "@/lib/instabarato"
 import { getAuthenticatedUser, getSupabaseConfig } from "@/lib/pix-auth"
 
 export const runtime = "nodejs"
@@ -112,54 +112,16 @@ export async function POST(request: Request) {
       throw new Error("Não foi possível reservar o pedido e cobrar o saldo.")
     }
 
-    let providerResult: any
-    try {
-      providerResult = await createOrder({ serviceId, link, quantity })
-    } catch {
-      const refunded = await callUserRpc(config, session.accessToken, "fail_social_order", {
-        p_order_id: reservedOrderId,
-        p_error_message: "Falha ao conectar com o fornecedor",
-      })
-      reservedOrderId = null
-      return NextResponse.json({
-        error: "O fornecedor não aceitou o pedido. O valor foi devolvido ao seu saldo.",
-        balance: Number(refunded),
-      }, { status: 502 })
-    }
-
-    const providerOrderId = Number(providerResult?.order)
-    if (!Number.isSafeInteger(providerOrderId) || providerOrderId <= 0 || providerResult?.error) {
-      const refunded = await callUserRpc(config, session.accessToken, "fail_social_order", {
-        p_order_id: reservedOrderId,
-        p_error_message: String(providerResult?.error || "Resposta inválida do fornecedor"),
-      })
-      reservedOrderId = null
-      return NextResponse.json({
-        error: "O fornecedor não confirmou o pedido. O valor foi devolvido ao seu saldo.",
-        balance: Number(refunded),
-      }, { status: 502 })
-    }
-
-    const completed = await callUserRpc(config, session.accessToken, "complete_social_order", {
-      p_order_id: reservedOrderId,
-      p_provider_order_id: providerOrderId,
-    })
-    if (completed !== true) {
-      // Do not refund automatically here: the provider may already have accepted the order.
-      return NextResponse.json({
-        error: "O fornecedor recebeu o pedido, mas não foi possível atualizar o histórico. Entre em contato com o suporte antes de reenviar.",
-        order: providerOrderId,
-        orderId: reservedOrderId,
-        cost,
-      }, { status: 502 })
-    }
-
+    // O pedido fica registrado no painel para execução manual pelo administrador.
+    // Nenhuma ordem é enviada automaticamente ao fornecedor.
     return NextResponse.json({
       ok: true,
-      order: providerOrderId,
+      order: reservedOrderId,
       orderId: reservedOrderId,
       cost,
       balance: Number(reserved.remaining_balance),
+      status: "pending_manual",
+      message: "Pedido recebido! Aguarde enquanto o administrador prepara seu pedido.",
     })
   } catch (error) {
     return NextResponse.json(
