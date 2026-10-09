@@ -68,7 +68,7 @@ export default function LoginPage() {
         {mode !== "recover" && <div className="mt-6 grid grid-cols-2 rounded-xl bg-black/30 p-1 text-sm">
           <button type="button" onClick={() => changeMode("login")} className={`rounded-lg px-3 py-2 font-semibold ${mode === "login" ? "bg-emerald-400 text-slate-950" : "text-slate-400"}`}>Entrar</button>
           <button type="button" onClick={() => changeMode("register")} className={`rounded-lg px-3 py-2 font-semibold ${mode === "register" ? "bg-emerald-400 text-slate-950" : "text-slate-400"}`}>Cadastrar</button>
-        </div>
+        </div>}
         <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
           {mode === "register" && <label className="block text-sm font-medium">Nome completo<div className="mt-2 flex items-center gap-2 rounded-xl border border-white/10 bg-black/20 px-3"><UserRound className="h-4 w-4 text-slate-500" /><input required autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} className="w-full bg-transparent py-3 outline-none" placeholder="Seu nome" /></div></label>}
           <label className="block text-sm font-medium">E-mail<div className="mt-2 flex items-center gap-2 rounded-xl border border-white/10 bg-black/20 px-3"><Mail className="h-4 w-4 text-slate-500" /><input required type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full bg-transparent py-3 outline-none" placeholder="voce@email.com" /></div></label>
