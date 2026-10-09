@@ -15,8 +15,16 @@ export async function GET() {
   }
 
   try {
+    // Oculta da área do cliente os pedidos com mais de 24 horas; o histórico continua disponível no painel administrativo.
+    const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+    const params = new URLSearchParams({
+      select: "id,service_id,service_name,target_link,quantity,cost,provider_order_id,status,error_message,delivery_message,created_at,updated_at",
+      created_at: `gte.${cutoff}`,
+      order: "created_at.desc",
+      limit: "100",
+    })
     const response = await fetch(
-      `${config.url}/rest/v1/social_orders?select=id,service_id,service_name,target_link,quantity,cost,provider_order_id,status,error_message,delivery_message,created_at,updated_at&order=created_at.desc&limit=100`,
+      `${config.url}/rest/v1/social_orders?${params.toString()}`,
       {
         headers: {
           apikey: config.key,
