@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useMemo } from "react"
-import { Search, Loader2, AlertCircle, ChevronDown } from "lucide-react"
+import { Search, Loader2, AlertCircle, ChevronDown, Info, ShieldAlert } from "lucide-react"
 import { addOrder } from "@/lib/balance"
 
 type Service = {
@@ -157,7 +157,7 @@ export function OrderPanel({
 
       setSubmitMessage({
         type: "success",
-        text: `Pedido #${data.order || "---"} criado com sucesso!`,
+        text: `Pedido enviado, aguarde... Pedido #${data.order || "---"} confirmado pelo fornecedor. Acompanhe o andamento em “Meus pedidos”.`,
       })
       setLink("")
       setQuantity("")
@@ -275,6 +275,28 @@ export function OrderPanel({
         />
       </div>
 
+      {/* Important instructions */}
+      <div className="space-y-3">
+        <div className="flex items-start gap-3 rounded-xl border border-amber-400/25 bg-amber-400/10 p-4 text-sm text-amber-100">
+          <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0" />
+          <div>
+            <p className="font-bold">Antes de enviar o pedido</p>
+            <ul className="mt-2 list-disc space-y-1 pl-4 leading-5">
+              <li>Para serviços de Instagram, deixe a conta e o conteúdo públicos durante a execução do pedido.</li>
+              <li>Confira se o link está correto e abre o perfil, publicação, Reel ou conteúdo solicitado.</li>
+              <li>Não envie o mesmo pedido novamente enquanto o anterior estiver aguardando ou em andamento.</li>
+            </ul>
+          </div>
+        </div>
+        <div className="flex items-start gap-3 rounded-xl border border-sky-400/20 bg-sky-400/5 p-4 text-sm text-slate-300">
+          <Info className="mt-0.5 h-5 w-5 shrink-0 text-sky-300" />
+          <div>
+            <p className="font-semibold text-slate-100">Importante para qualquer serviço</p>
+            <p className="mt-1 leading-5">Escolha o serviço que corresponde ao link informado e respeite a quantidade mínima e máxima. O andamento pode levar algum tempo; acompanhe o status em “Meus pedidos”. Serviços disponíveis dependem da lista atual do fornecedor.</p>
+          </div>
+        </div>
+      </div>
+
       {/* Quantity */}
       <div className="flex flex-col gap-1.5">
         <label className="text-sm font-bold text-foreground">
@@ -341,7 +363,7 @@ export function OrderPanel({
         {submitting ? (
           <span className="flex items-center justify-center gap-2">
             <Loader2 className="h-4 w-4 animate-spin" />
-            Enviando...
+            Pedido enviado, aguarde...
           </span>
         ) : (
           "Enviar"
