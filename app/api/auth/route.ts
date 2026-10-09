@@ -17,7 +17,37 @@ export async function POST(request: NextRequest) {
     const password = typeof body.password === "string" ? body.password : ""
     const name = typeof body.name === "string" ? body.name.trim() : ""
 
-    if (mode === "recover") {\n      if (!email) return NextResponse.json({ error: "Informe seu e-mail para recuperar a senha." }, { status: 400 })\n      const redirectTo = `${request.nextUrl.origin}/login?reset=1`\n      const recoveryResponse = await fetch(`${supabaseUrl}/auth/v1/recover?redirect_to=${encodeURIComponent(redirectTo)}`, {\n        method: "POST",\n        headers: { "Content-Type": "application/json", apikey: publishableKey },\n        body: JSON.stringify({ email }),\n        cache: "no-store",\n      })\n      if (!recoveryResponse.ok) {\n        const recoveryData = await recoveryResponse.json().catch(() => ({}))\n        return NextResponse.json({ error: recoveryData.message || recoveryData.msg || "Não foi possível enviar o e-mail de recuperação." }, { status: recoveryResponse.status })\n      }\n      return NextResponse.json({ ok: true, message: "Se o e-mail estiver cadastrado, você receberá um link para redefinir a senha. Confira também o spam." })\n    }\n\n    if (mode === "reset") {\n      const accessToken = typeof body.accessToken === "string" ? body.accessToken : ""\n      if (!accessToken || password.length < 6) return NextResponse.json({ error: "O link é inválido ou a senha tem menos de 6 caracteres. Solicite um novo link." }, { status: 400 })\n      const updateResponse = await fetch(`${supabaseUrl}/auth/v1/user`, {\n        method: "PUT",\n        headers: { "Content-Type": "application/json", apikey: publishableKey, Authorization: `Bearer ${accessToken}` },\n        body: JSON.stringify({ password }),\n        cache: "no-store",\n      })\n      const updateData = await updateResponse.json().catch(() => ({}))\n      if (!updateResponse.ok) return NextResponse.json({ error: updateData.message || updateData.msg || "Não foi possível alterar a senha. Solicite um novo link." }, { status: updateResponse.status })\n      return NextResponse.json({ ok: true, message: "Senha alterada! Agora entre com sua nova senha." })\n    }\n\n    if (!email || !password || password.length < 6 || (mode === "register" && !name)) {
+    if (mode === "recover") {
+      if (!email) return NextResponse.json({ error: "Informe seu e-mail para recuperar a senha." }, { status: 400 })
+      const redirectTo = `${request.nextUrl.origin}/login?reset=1`
+      const recoveryResponse = await fetch(`${supabaseUrl}/auth/v1/recover?redirect_to=${encodeURIComponent(redirectTo)}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", apikey: publishableKey },
+        body: JSON.stringify({ email }),
+        cache: "no-store",
+      })
+      if (!recoveryResponse.ok) {
+        const recoveryData = await recoveryResponse.json().catch(() => ({}))
+        return NextResponse.json({ error: recoveryData.message || recoveryData.msg || "Não foi possível enviar o e-mail de recuperação." }, { status: recoveryResponse.status })
+      }
+      return NextResponse.json({ ok: true, message: "Se o e-mail estiver cadastrado, você receberá um link para redefinir a senha. Confira também o spam." })
+    }
+
+    if (mode === "reset") {
+      const accessToken = typeof body.accessToken === "string" ? body.accessToken : ""
+      if (!accessToken || password.length < 6) return NextResponse.json({ error: "O link é inválido ou a senha tem menos de 6 caracteres. Solicite um novo link." }, { status: 400 })
+      const updateResponse = await fetch(`${supabaseUrl}/auth/v1/user`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", apikey: publishableKey, Authorization: `Bearer ${accessToken}` },
+        body: JSON.stringify({ password }),
+        cache: "no-store",
+      })
+      const updateData = await updateResponse.json().catch(() => ({}))
+      if (!updateResponse.ok) return NextResponse.json({ error: updateData.message || updateData.msg || "Não foi possível alterar a senha. Solicite um novo link." }, { status: updateResponse.status })
+      return NextResponse.json({ ok: true, message: "Senha alterada! Agora entre com sua nova senha." })
+    }
+
+    if (!email || !password || password.length < 6 || (mode === "register" && !name)) {
       return NextResponse.json({ error: "Preencha os campos corretamente. A senha precisa ter pelo menos 6 caracteres." }, { status: 400 })
     }
 
